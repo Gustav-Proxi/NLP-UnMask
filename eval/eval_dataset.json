@@ -1,0 +1,182 @@
+[
+  {
+    "id": "q01", "topic": "brachial_plexus", "concept": "brachial_plexus.origin", "difficulty": "easy",
+    "question": "What spinal cord levels form the brachial plexus?",
+    "expected_answer": "C5, C6, C7, C8, and T1",
+    "answer_keywords": ["c5, c6, c7, c8", "c5 through t1", "five roots", "c5 to t1"]
+  },
+  {
+    "id": "q02", "topic": "brachial_plexus", "concept": "brachial_plexus.origin", "difficulty": "easy",
+    "question": "Which anterior rami contribute to the brachial plexus?",
+    "expected_answer": "The anterior rami of spinal nerves C5 through T1 form the brachial plexus.",
+    "answer_keywords": ["c5 through t1", "anterior rami of spinal", "c5, c6, c7, c8, t1"]
+  },
+  {
+    "id": "q03", "topic": "brachial_plexus", "concept": "brachial_plexus.trunks", "difficulty": "medium",
+    "question": "Name the three trunks of the brachial plexus and the spinal levels that form each.",
+    "expected_answer": "Upper trunk (C5-C6), middle trunk (C7), lower trunk (C8-T1).",
+    "answer_keywords": ["upper trunk", "lower trunk", "middle trunk", "c5-c6", "c8-t1"]
+  },
+  {
+    "id": "q04", "topic": "brachial_plexus", "concept": "brachial_plexus.trunks", "difficulty": "medium",
+    "question": "What is Erb's point and what injury does it cause?",
+    "expected_answer": "Erb's point is where C5 and C6 unite. Injury here causes Erb's palsy.",
+    "answer_keywords": ["erb's point", "erb's palsy", "c5 and c6 unite"]
+  },
+  {
+    "id": "q05", "topic": "brachial_plexus", "concept": "brachial_plexus.divisions", "difficulty": "medium",
+    "question": "What is the significance of anterior vs posterior divisions of the brachial plexus?",
+    "expected_answer": "Anterior divisions supply flexor compartments; posterior divisions supply extensor compartments.",
+    "answer_keywords": ["flexor compartment", "extensor compartment", "anterior divisions supply", "posterior divisions supply"]
+  },
+  {
+    "id": "q06", "topic": "brachial_plexus", "concept": "brachial_plexus.cords", "difficulty": "hard",
+    "question": "How do the three cords of the brachial plexus form from the divisions?",
+    "expected_answer": "Lateral cord from anterior divisions of upper and middle trunks (C5-C7). Medial cord from anterior division of lower trunk (C8-T1). Posterior cord from all three posterior divisions (C5-T1).",
+    "answer_keywords": ["lateral cord", "medial cord", "posterior cord", "anterior division of lower trunk"]
+  },
+  {
+    "id": "q07", "topic": "brachial_plexus", "concept": "brachial_plexus.cords", "difficulty": "medium",
+    "question": "Which cord of the brachial plexus gives rise to the axillary and radial nerves?",
+    "expected_answer": "The posterior cord gives rise to the axillary nerve and radial nerve.",
+    "answer_keywords": ["posterior cord gives rise", "posterior cord", "axillary nerve and radial"]
+  },
+  {
+    "id": "q08", "topic": "brachial_plexus", "concept": "brachial_plexus.terminal_branches", "difficulty": "hard",
+    "question": "Name the five major terminal branches of the brachial plexus.",
+    "expected_answer": "Musculocutaneous, median, ulnar, radial, and axillary nerves.",
+    "answer_keywords": ["musculocutaneous", "five terminal", "musculocutaneous nerve", "five major terminal"]
+  },
+  {
+    "id": "q09", "topic": "brachial_plexus", "concept": "brachial_plexus.terminal_branches", "difficulty": "medium",
+    "question": "Which nerve of the brachial plexus supplies the biceps brachii and causes elbow flexion?",
+    "expected_answer": "The musculocutaneous nerve (C5-C7) from the lateral cord supplies the biceps brachii.",
+    "answer_keywords": ["musculocutaneous nerve", "musculocutaneous", "lateral cord supplies the biceps"]
+  },
+  {
+    "id": "q10", "topic": "peripheral_nerves", "concept": "peripheral_nerves.axillary", "difficulty": "easy",
+    "question": "What muscle does the axillary nerve innervate, and what is that muscle's function?",
+    "expected_answer": "The axillary nerve innervates the deltoid muscle, which is responsible for shoulder abduction.",
+    "answer_keywords": ["axillary nerve innervates", "deltoid muscle", "axillary nerve supplies", "shoulder abduction"]
+  },
+  {
+    "id": "q11", "topic": "peripheral_nerves", "concept": "peripheral_nerves.axillary", "difficulty": "medium",
+    "question": "What are the clinical signs of axillary nerve injury?",
+    "expected_answer": "Inability to abduct the shoulder past 15 degrees, loss of sensation over the lateral arm, and deltoid atrophy.",
+    "answer_keywords": ["deltoid atrophy", "abduct the shoulder past 15", "lateral arm sensation"]
+  },
+  {
+    "id": "q12", "topic": "peripheral_nerves", "concept": "peripheral_nerves.axillary", "difficulty": "medium",
+    "question": "What traumatic injury most commonly damages the axillary nerve?",
+    "expected_answer": "Dislocation of the shoulder joint or fracture of the surgical neck of the humerus.",
+    "answer_keywords": ["surgical neck of the humerus", "shoulder dislocation", "fracture of the surgical neck"]
+  },
+  {
+    "id": "q13", "topic": "peripheral_nerves", "concept": "peripheral_nerves.radial", "difficulty": "easy",
+    "question": "What is wrist drop and which nerve causes it?",
+    "expected_answer": "Wrist drop is inability to extend the wrist, caused by radial nerve injury.",
+    "answer_keywords": ["wrist drop", "radial nerve injury", "radial nerve causes"]
+  },
+  {
+    "id": "q14", "topic": "peripheral_nerves", "concept": "peripheral_nerves.radial", "difficulty": "medium",
+    "question": "A patient fractures the mid-shaft of the humerus. Which nerve is damaged and is the triceps affected?",
+    "expected_answer": "The radial nerve is damaged. Triceps function is spared with mid-shaft humeral fracture.",
+    "answer_keywords": ["radial nerve", "triceps is spared", "triceps function is spared", "radial nerve is damaged"]
+  },
+  {
+    "id": "q15", "topic": "peripheral_nerves", "concept": "peripheral_nerves.radial", "difficulty": "hard",
+    "question": "What muscles does the radial nerve supply in the arm and forearm?",
+    "expected_answer": "Triceps, brachioradialis, extensor carpi radialis longus and brevis, and all other extensor muscles via the posterior interosseous nerve.",
+    "answer_keywords": ["brachioradialis", "posterior interosseous nerve", "extensor carpi radialis", "triceps brachii"]
+  },
+  {
+    "id": "q16", "topic": "peripheral_nerves", "concept": "peripheral_nerves.median", "difficulty": "medium",
+    "question": "What is Ape hand deformity and which nerve causes it?",
+    "expected_answer": "Ape hand is caused by median nerve injury at the wrist: thenar wasting, loss of thumb opposition, sensory loss over lateral 3.5 fingers.",
+    "answer_keywords": ["ape hand", "median nerve", "thenar wasting", "thumb opposition"]
+  },
+  {
+    "id": "q17", "topic": "peripheral_nerves", "concept": "peripheral_nerves.median", "difficulty": "hard",
+    "question": "Which intrinsic hand muscles does the median nerve supply?",
+    "expected_answer": "The thenar muscles: opponens pollicis, abductor pollicis brevis, superficial head of flexor pollicis brevis, and the first two lumbricals.",
+    "answer_keywords": ["opponens pollicis", "abductor pollicis brevis", "first two lumbricals", "thenar muscles"]
+  },
+  {
+    "id": "q18", "topic": "peripheral_nerves", "concept": "peripheral_nerves.median", "difficulty": "medium",
+    "question": "Where does the median nerve enter the hand and what clinical condition results from compression there?",
+    "expected_answer": "The median nerve enters the hand through the carpal tunnel beneath the flexor retinaculum, and compression causes carpal tunnel syndrome.",
+    "answer_keywords": ["carpal tunnel", "flexor retinaculum", "carpal tunnel syndrome"]
+  },
+  {
+    "id": "q19", "topic": "peripheral_nerves", "concept": "peripheral_nerves.ulnar", "difficulty": "easy",
+    "question": "What deformity results from ulnar nerve injury and which fingers are most affected?",
+    "expected_answer": "Claw hand deformity, most prominent in the ring and little fingers.",
+    "answer_keywords": ["claw hand", "ring and little finger", "claw hand deformity"]
+  },
+  {
+    "id": "q20", "topic": "peripheral_nerves", "concept": "peripheral_nerves.ulnar", "difficulty": "medium",
+    "question": "What intrinsic hand muscles does the ulnar nerve supply?",
+    "expected_answer": "All interossei, hypothenar muscles, medial two lumbricals, and adductor pollicis.",
+    "answer_keywords": ["interossei", "hypothenar muscles", "adductor pollicis", "medial two lumbricals"]
+  },
+  {
+    "id": "q21", "topic": "peripheral_nerves", "concept": "peripheral_nerves.ulnar", "difficulty": "easy",
+    "question": "Where does the ulnar nerve pass posterior to at the elbow, and what common name does this location have?",
+    "expected_answer": "The ulnar nerve passes posterior to the medial epicondyle, commonly called the 'funny bone' groove.",
+    "answer_keywords": ["medial epicondyle", "funny bone", "posterior to the medial epicondyle"]
+  },
+  {
+    "id": "q22", "topic": "rotator_cuff", "concept": "rotator_cuff.muscles", "difficulty": "easy",
+    "question": "Name the four rotator cuff muscles using the SITS mnemonic.",
+    "expected_answer": "Supraspinatus, Infraspinatus, Teres minor, Subscapularis.",
+    "answer_keywords": ["supraspinatus", "infraspinatus", "teres minor", "subscapularis"]
+  },
+  {
+    "id": "q23", "topic": "rotator_cuff", "concept": "rotator_cuff.muscles", "difficulty": "medium",
+    "question": "What is the primary role of the rotator cuff as a group?",
+    "expected_answer": "Stabilizing the humeral head against the glenoid fossa, preventing superior migration during deltoid contraction.",
+    "answer_keywords": ["humeral head", "glenoid fossa", "stabilizing the humeral", "superior migration"]
+  },
+  {
+    "id": "q24", "topic": "rotator_cuff", "concept": "rotator_cuff.supraspinatus", "difficulty": "medium",
+    "question": "What is the supraspinatus' specific role in shoulder abduction?",
+    "expected_answer": "The supraspinatus initiates shoulder abduction for the first 15 degrees before the deltoid takes over.",
+    "answer_keywords": ["first 15 degrees", "initiates abduction", "deltoid takes over", "first 15"]
+  },
+  {
+    "id": "q25", "topic": "rotator_cuff", "concept": "rotator_cuff.supraspinatus", "difficulty": "medium",
+    "question": "How is the supraspinatus tested clinically?",
+    "expected_answer": "The empty-can test: arm at 90 degrees abduction, 30 degrees horizontal adduction, internally rotated.",
+    "answer_keywords": ["empty-can test", "empty-can", "90 degrees abduction", "horizontal adduction"]
+  },
+  {
+    "id": "q26", "topic": "rotator_cuff", "concept": "rotator_cuff.infraspinatus", "difficulty": "easy",
+    "question": "What is the primary action of the infraspinatus?",
+    "expected_answer": "External rotation of the shoulder.",
+    "answer_keywords": ["external rotation of the shoulder", "external rotation", "externally rotates"]
+  },
+  {
+    "id": "q27", "topic": "rotator_cuff", "concept": "rotator_cuff.subscapularis", "difficulty": "medium",
+    "question": "What makes the subscapularis anatomically unique among the rotator cuff muscles?",
+    "expected_answer": "It is the only rotator cuff muscle on the anterior surface of the scapula, originating from the subscapular fossa.",
+    "answer_keywords": ["subscapular fossa", "anterior surface of the scapula", "only rotator cuff muscle on the anterior"]
+  },
+  {
+    "id": "q28", "topic": "rotator_cuff", "concept": "rotator_cuff.subscapularis", "difficulty": "medium",
+    "question": "How is the subscapularis tested clinically?",
+    "expected_answer": "The lift-off test: arm internally rotated behind the back, patient lifts the arm away from the body.",
+    "answer_keywords": ["lift-off test", "lift-off", "internally rotated behind the back"]
+  },
+  {
+    "id": "q29", "topic": "peripheral_nerves", "concept": "peripheral_nerves.axillary", "difficulty": "hard",
+    "question": "A patient cannot abduct their arm past 15 degrees and has numbness over the lateral shoulder after a motorcycle accident. Which nerve is damaged?",
+    "expected_answer": "The axillary nerve is damaged, likely from shoulder dislocation or fracture of the surgical neck of the humerus.",
+    "answer_keywords": ["axillary nerve is damaged", "axillary nerve", "surgical neck of the humerus"]
+  },
+  {
+    "id": "q30", "topic": "peripheral_nerves", "concept": "peripheral_nerves.ulnar", "difficulty": "hard",
+    "question": "A patient who fell on an outstretched hand has difficulty spreading their fingers and gripping, with clawing in the ring and little fingers. Which nerve is affected and where is the likely injury site?",
+    "expected_answer": "The ulnar nerve is affected. Injury at or near the medial epicondyle of the humerus (funny bone) is the most likely site.",
+    "answer_keywords": ["ulnar nerve is affected", "ulnar nerve", "medial epicondyle of the humerus"]
+  }
+]

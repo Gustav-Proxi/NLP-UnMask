@@ -1,0 +1,84 @@
+{
+  "concepts": {
+    "spinal_cord.anatomy": {
+      "label": "Spinal Cord Anatomy",
+      "topic": "spinal_cord",
+      "prerequisites": []
+    },
+    "spinal_cord.anterior_rami": {
+      "label": "Anterior Rami of Spinal Nerves",
+      "topic": "spinal_cord",
+      "prerequisites": ["spinal_cord.anatomy"]
+    },
+    "brachial_plexus.origin": {
+      "label": "Brachial Plexus Origin (C5-T1)",
+      "topic": "brachial_plexus",
+      "prerequisites": ["spinal_cord.anterior_rami"]
+    },
+    "brachial_plexus.trunks": {
+      "label": "Brachial Plexus Trunks",
+      "topic": "brachial_plexus",
+      "prerequisites": ["brachial_plexus.origin"]
+    },
+    "brachial_plexus.divisions": {
+      "label": "Anterior and Posterior Divisions",
+      "topic": "brachial_plexus",
+      "prerequisites": ["brachial_plexus.trunks"]
+    },
+    "brachial_plexus.cords": {
+      "label": "Lateral, Medial, Posterior Cords",
+      "topic": "brachial_plexus",
+      "prerequisites": ["brachial_plexus.divisions"]
+    },
+    "brachial_plexus.terminal_branches": {
+      "label": "Terminal Branches (5 major nerves)",
+      "topic": "brachial_plexus",
+      "prerequisites": ["brachial_plexus.cords"]
+    },
+    "peripheral_nerves.axillary": {
+      "label": "Axillary Nerve (C5-C6)",
+      "topic": "peripheral_nerves",
+      "prerequisites": ["brachial_plexus.cords"]
+    },
+    "peripheral_nerves.radial": {
+      "label": "Radial Nerve (C5-T1)",
+      "topic": "peripheral_nerves",
+      "prerequisites": ["brachial_plexus.cords"]
+    },
+    "peripheral_nerves.median": {
+      "label": "Median Nerve (C5-T1)",
+      "topic": "peripheral_nerves",
+      "prerequisites": ["brachial_plexus.cords"]
+    },
+    "peripheral_nerves.ulnar": {
+      "label": "Ulnar Nerve (C8-T1)",
+      "topic": "peripheral_nerves",
+      "prerequisites": ["brachial_plexus.cords"]
+    },
+    "rotator_cuff.muscles": {
+      "label": "Rotator Cuff (SITS muscles)",
+      "topic": "rotator_cuff",
+      "prerequisites": ["peripheral_nerves.axillary", "peripheral_nerves.radial"]
+    },
+    "rotator_cuff.supraspinatus": {
+      "label": "Supraspinatus — Abduction initiation",
+      "topic": "rotator_cuff",
+      "prerequisites": ["rotator_cuff.muscles"]
+    },
+    "rotator_cuff.infraspinatus": {
+      "label": "Infraspinatus — External rotation",
+      "topic": "rotator_cuff",
+      "prerequisites": ["rotator_cuff.muscles"]
+    },
+    "rotator_cuff.teres_minor": {
+      "label": "Teres Minor — External rotation",
+      "topic": "rotator_cuff",
+      "prerequisites": ["rotator_cuff.muscles"]
+    },
+    "rotator_cuff.subscapularis": {
+      "label": "Subscapularis — Internal rotation",
+      "topic": "rotator_cuff",
+      "prerequisites": ["rotator_cuff.muscles"]
+    }
+  }
+}
