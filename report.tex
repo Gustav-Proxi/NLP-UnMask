@@ -207,9 +207,13 @@ A post-generation leak guard additionally checks for $\geq$4 significant-word
 overlap between \texttt{socratic\_question} and \texttt{correct\_answer},
 triggering a retry if fired.
 
-\textbf{Cost routing:} Rapport and Wrapup route to local Llama 3.1 8B via
-Ollama (65--75\% of turns); GPT-4o handles Tutoring and Assessment.
-Total session cost: ${\sim}\$0.08$--$0.10$.
+\textbf{Honest encouragement and summary.}
+When \texttt{consecutive\_incorrect} $> 0$, hollow praise is forbidden.
+At Wrapup, GPT-4o structured output produces a \texttt{SessionSummary}:
+per-concept mastery status, misconceptions from \texttt{mistake\_log}, and
+actionable study tips.
+\textbf{Cost routing:} Rapport via local Llama 3.1 8B (65--75\%, \$0);
+GPT-4o for Tutoring, Assessment, and Wrapup summary (${\sim}\$0.08$--$0.10$/session).
 
 \subsection{Concept Prerequisite Graph}
 
@@ -251,8 +255,12 @@ The Pedagogy Agent clears \texttt{revisit\_scheduled} after one turn.
 \paragraph{Corpus.}
 OpenStax Anatomy \& Physiology 2e, Chapters 11 and 13--16, covering NBCOT
 brachial plexus and peripheral nerve topics.
-Indexed into Qdrant (25 chunks) with per-chunk metadata:
+Indexed into Qdrant (48 chunks across all 16 concepts) with per-chunk metadata:
 \texttt{is\_answer\_chunk}, \texttt{chunk\_type}, \texttt{concept}.
+Each concept has 3--5 chunks spanning context, prerequisite, PCR-gated answer,
+figure, and clinical types---the clinical chunks include OT assessment techniques
+(Phalen's, Tinel's, Froment's sign, empty-can, lift-off tests), splinting
+protocols, and NBCOT clinical scenarios with answer keys.
 
 \paragraph{Evaluation dataset.}
 30 QA triples (question, retrieved context, expected answer) spanning:
@@ -285,7 +293,7 @@ T2: Adaptive Strategy  & LangGraph 4-phase + orchestrator & \checkmark \\
 T3: Assessment         & Clinical scenario + gold-chunk eval & \checkmark \\
 T4: Multimodal         & Chainlit accepts uploads; VLM backend pending & $\circ$ \\
 T5: Memory             & Mistake log + proactive revisit at 8 min (§\ref{sec:memory}) & \checkmark \\
-Bonus: Dashboard       & Per-turn mastery panel (\textcolor{red}{$\bullet$}/\textcolor{orange}{$\bullet$}/\textcolor{green}{$\bullet$}) & \checkmark \\
+Bonus: Dashboard       & Per-turn mastery panel (\textcolor{red}{$\bullet$}/\textcolor{orange}{$\bullet$}/\textcolor{green}{$\bullet$}); structured end-of-session report & \checkmark \\
 Generalizability       & Config-only swap; zero code changes & \checkmark \\
 \bottomrule
 \end{tabularx}
@@ -480,16 +488,15 @@ image uploads but the VLM backend is not yet integrated.
 UnMask demonstrates that the standard Socratic AI tutoring paradigm---retrieve
 everything, suppress via prompting---has a fundamental architectural
 vulnerability that cannot be fixed at the generation layer.
-By moving knowledge masking to the retrieval layer via Progressive Context
-Revelation, answer leakage becomes architecturally impossible before mastery
-thresholds are met.
-The measurable cost is a 0.23-point purity delta (4.70 vs.\ 4.93/5),
-representing the precision penalty of teaching without seeing the answer---a
-trade-off any honest pedagogical system should accept.
-Combined with Corrective RAG, a concept prerequisite graph for adaptive
-routing, and a LangGraph state machine enforcing session structure, UnMask
-provides a grounded, evaluable Socratic tutoring system for OT anatomy at
-\$0.08--0.10 per session.
+Progressive Context Revelation moves knowledge masking to the retrieval layer,
+making answer leakage architecturally impossible before mastery thresholds are met.
+The measurable cost is a 0.23-point purity delta (4.70 vs.\ 4.93/5)---the
+precision penalty of teaching without seeing the answer.
+Session Mistake Memory closes the learning loop that stateless tutors leave open:
+structured misconception records drive proactive revisit at 8 minutes, and a
+structured \texttt{SessionSummary} provides honest per-concept feedback at wrapup.
+Together with Corrective RAG, a concept prerequisite DAG, and a LangGraph state
+machine, UnMask provides a grounded, evaluable OT anatomy tutor at \$0.08--0.10 per session.
 
 %% ─────────────────────────────────────────────────────────────
 \section*{Acknowledgments}
