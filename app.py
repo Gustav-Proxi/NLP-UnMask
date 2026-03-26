@@ -78,7 +78,11 @@ async def on_message(message: cl.Message):
         if next_q:
             response = response + f"\n\n{next_q}" if response else next_q
 
-    await cl.Message(content=response).send()
+    # ── Wrapup: send as a distinct styled message ────────────────────────────
+    if phase == "wrapup":
+        await cl.Message(content=response, author="📋 Session Report").send()
+    else:
+        await cl.Message(content=response).send()
 
     # ── Backend debug panel (instructor-visible metadata) ────────────────────
     mastery = result.get("mastery_scores", {})
@@ -114,16 +118,36 @@ async def on_message(message: cl.Message):
                 )
             )
 
-        # Show session state
+        # Session state + mistake log + revisit status
+        mistake_log = result.get("mistake_log", [])
+        revisit_info = ""
+        if result.get("revisit_scheduled"):
+            rt = result.get("revisit_topic", "")
+            revisit_info = f"\n**Revisit scheduled:** {rt.replace('_',' ').replace('.',' › ')}"
         session_info = (
             f"**Phase:** {phase}  |  **Turn:** {turn}  |  "
             f"**Elapsed:** {result.get('elapsed_seconds', 0):.0f}s\n"
             f"**Coverage:** {result.get('coverage_ratio', 0):.0%}  |  "
             f"**Consecutive correct:** {result.get('consecutive_correct', 0)}  |  "
             f"**Consecutive incorrect:** {result.get('consecutive_incorrect', 0)}"
+            f"{revisit_info}"
         )
         elements.append(
             cl.Text(name="⚙️ Session State", content=session_info, display="side")
         )
+
+        if mistake_log:
+            mistake_text = "\n".join(
+                f"Turn {m['turn']} | {m['topic'].replace('_',' ').replace('.',' › ')}: "
+                f"{m.get('misconception','—') or '—'}"
+                for m in mistake_log
+            )
+            elements.append(
+                cl.Text(
+                    name="⚠️ Mistake Log",
+                    content=f"```\n{mistake_text}\n```",
+                    display="side",
+                )
+            )
 
         await cl.Message(content="", elements=elements).send()

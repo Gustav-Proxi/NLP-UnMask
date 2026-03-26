@@ -8,7 +8,7 @@ Only visible_response.socratic_question + encouragement reach the student.
 from __future__ import annotations
 
 import os
-from typing import Optional
+from typing import Literal, Optional
 
 import yaml
 from openai import OpenAI
@@ -34,11 +34,47 @@ class VisibleResponse(BaseModel):
     """Only this is rendered in Chainlit."""
     socratic_question: str
     encouragement: str
+    """Honest, calibrated feedback.
+    - If student is struggling (consecutive_incorrect > 0): acknowledge the difficulty
+      directly ('That part is tricky' / 'Let\'s think about this differently').
+      Do NOT say 'great job', 'well done', or 'you\'re doing great' when they are wrong.
+    - If student answered correctly: genuine specific praise.
+    - If turn 1 (no answer yet): neutral welcome only."""
 
 
 class SocraticOutput(BaseModel):
     internal_analysis: InternalAnalysis
     visible_response: VisibleResponse
+
+
+# ── Session summary schema ────────────────────────────────────────────────────
+
+class TopicReport(BaseModel):
+    concept: str
+    """The concept ID, e.g. 'peripheral_nerves.radial'"""
+    mastery_score: float
+    """Final mastery in [0, 1]"""
+    status: Literal["mastered", "progressing", "needs_review"]
+    """mastered = score >= 0.7, progressing = 0.4-0.7, needs_review = < 0.4"""
+    honest_feedback: str
+    """One honest sentence about the student's performance on this concept.
+    Be specific: reference what they got right or wrong. No hollow praise."""
+
+class SessionSummary(BaseModel):
+    overall_assessment: str
+    """2-3 sentences summarising the session honestly. Name what went well AND
+    what needs work. Do not sugarcoat weak performance."""
+    topic_reports: list[TopicReport]
+    """One entry per concept that was covered, ordered weakest-first."""
+    mistake_highlights: list[str]
+    """Up to 3 specific misconceptions the student showed, phrased clearly
+    (e.g. 'Confused the axillary nerve with the radial nerve at the deltoid').
+    Empty list if no mistakes were logged."""
+    study_recommendations: list[str]
+    """2-3 concrete, actionable study tips based on weak topics."""
+    closing_reflection: str
+    """One Socratic question for the student to think about before next session.
+    Must end with '?'."""
 
 
 # ── System prompts ────────────────────────────────────────────────────────────
@@ -70,6 +106,12 @@ RETRIEVAL MODE: {mode} (answer chunks {"NOT " if mode != "full_reveal" else ""}p
 CONVERSATION SO FAR: {history}
 CURRENT TURN: {turn}
 CONSECUTIVE INCORRECT: {consecutive_incorrect}
+
+ENCOURAGEMENT RULES (mandatory):
+- consecutive_incorrect = 0 → genuine praise if student answered something, neutral if turn 1
+- consecutive_incorrect = 1 → "That's a tricky one" / "Not quite — let's approach it differently"
+- consecutive_incorrect >= 2 → direct acknowledgement of struggle + redirect, NO praise
+- NEVER use "great job", "well done", "you're doing great" when consecutive_incorrect > 0
 {revisit_block}"""
 
 _ASSESSMENT_SYSTEM = """\
@@ -137,6 +179,94 @@ def _call_ollama(system: str, user: str, history: list[dict] | None = None) -> s
     return json.loads(result.stdout)["message"]["content"]
 
 
+# ── Session summary generator ─────────────────────────────────────────────────
+
+_SUMMARY_PROMPT = """\
+You are generating an end-of-session report for an OT anatomy tutoring session.
+Be honest — do not soften poor performance. Students need accurate feedback to improve.
+
+SESSION DATA:
+Mastery scores (0=none, 1=full): {mastery_json}
+Mistake log (each wrong answer): {mistakes_json}
+Topics covered: {topics_covered}
+Session duration: {duration_min:.1f} minutes
+Total turns: {total_turns}
+
+Generate a SessionSummary with:
+- topic_reports: one entry per covered concept, ordered weakest-first
+- overall_assessment: honest 2-3 sentence summary (name strengths AND weaknesses)
+- mistake_highlights: up to 3 specific misconceptions shown (empty list if none)
+- study_recommendations: 2-3 concrete actionable tips for the weak topics
+- closing_reflection: one Socratic question ending with '?' for next session"""
+
+
+def _generate_session_summary(state: TutoringState) -> str:
+    """Generate a structured session summary and format it as markdown."""
+    import json
+
+    mastery = state.get("mastery_scores", {})
+    mistake_log = state.get("mistake_log", [])
+    elapsed = state.get("elapsed_seconds", 0.0)
+    turn = state.get("turn_count", 0)
+
+    # Only report on concepts that were actually visited
+    topics_visited = set(mastery.keys()) | {m["topic"] for m in mistake_log}
+
+    client = _get_client()
+    prompt = _SUMMARY_PROMPT.format(
+        mastery_json=json.dumps(
+            {k: round(v, 2) for k, v in mastery.items() if k in topics_visited},
+            indent=2,
+        ),
+        mistakes_json=json.dumps(mistake_log, indent=2) if mistake_log else "[]",
+        topics_covered=", ".join(topics_visited) or "none",
+        duration_min=elapsed / 60,
+        total_turns=turn,
+    )
+
+    resp = client.beta.chat.completions.parse(
+        model=os.getenv("OPENAI_MODEL", _cfg["llm"]["model"]),
+        messages=[{"role": "user", "content": prompt}],
+        response_format=SessionSummary,
+        temperature=0.3,
+    )
+    summary: SessionSummary = resp.choices[0].message.parsed
+
+    # ── Format as readable markdown ────────────────────────────────────────
+    lines = ["## 📋 Session Report\n"]
+    lines.append(f"{summary.overall_assessment}\n")
+
+    # Per-topic report card
+    lines.append("### Topic Breakdown\n")
+    status_icon = {"mastered": "✅", "progressing": "🟡", "needs_review": "❌"}
+    for tr in summary.topic_reports:
+        icon = status_icon.get(tr.status, "⬜")
+        concept_readable = tr.concept.replace("_", " ").replace(".", " › ")
+        lines.append(
+            f"{icon} **{concept_readable}** — mastery {tr.mastery_score:.0%}\n"
+            f"> {tr.honest_feedback}\n"
+        )
+
+    # Mistake highlights
+    if summary.mistake_highlights:
+        lines.append("### ⚠️ Misconceptions to Address\n")
+        for m in summary.mistake_highlights:
+            lines.append(f"- {m}")
+        lines.append("")
+
+    # Study recommendations
+    if summary.study_recommendations:
+        lines.append("### 📚 Study Recommendations\n")
+        for tip in summary.study_recommendations:
+            lines.append(f"- {tip}")
+        lines.append("")
+
+    # Closing reflection
+    lines.append(f"---\n**Before next session:** {summary.closing_reflection}")
+
+    return "\n".join(lines)
+
+
 # ── Main node ─────────────────────────────────────────────────────────────────
 
 def socratic_generator(state: TutoringState) -> dict:
@@ -161,44 +291,43 @@ def socratic_generator(state: TutoringState) -> dict:
         f"{m['role'].capitalize()}: {m['content']}" for m in history[-6:]
     ) or "(Session start)"
 
-    # ── Rapport / Wrapup: plain LLM (no structured schema) ─────────────────
-    if phase in ("rapport", "wrapup"):
-        if phase == "rapport":
-            system = _RAPPORT_SYSTEM
-            user = state["student_message"] or "Hello"
-        else:
-            import json
-            system = _WRAPUP_SYSTEM.format(
-                weak_topics=", ".join(state.get("weak_topics", [])) or "none",
-                mastery_json=json.dumps(mastery, indent=2),
-            )
-            user = "Please give me a session summary."
-
-        # Try local first; fall back to API — both use plain completions, no schema
+    # ── Rapport: plain LLM (local or API) ──────────────────────────────────
+    if phase == "rapport":
+        user = state["student_message"] or "Hello"
         text = None
         if _use_local(phase):
             try:
-                text = _call_ollama(system, user, history=history)
+                text = _call_ollama(_RAPPORT_SYSTEM, user, history=history)
             except Exception:
                 pass
-
         if text is None:
             client = _get_client()
-            api_messages = [{"role": "system", "content": system}, *history[-6:], {"role": "user", "content": user}]
             resp = client.chat.completions.create(
                 model=os.getenv("OPENAI_MODEL", _cfg["llm"]["model"]),
-                messages=api_messages,
+                messages=[{"role": "system", "content": _RAPPORT_SYSTEM}, *history[-6:], {"role": "user", "content": user}],
                 max_tokens=120,
                 temperature=0.7,
             )
             text = resp.choices[0].message.content.strip()
-
         return {
             "generated_response": text,
             "_internal_analysis": None,
             "conversation_history": [
                 {"role": "user", "content": user},
                 {"role": "assistant", "content": text},
+            ],
+            "turn_count": turn + 1,
+        }
+
+    # ── Wrapup: structured SessionSummary via GPT-4o ────────────────────────
+    if phase == "wrapup":
+        formatted = _generate_session_summary(state)
+        return {
+            "generated_response": formatted,
+            "_internal_analysis": None,
+            "conversation_history": [
+                {"role": "user", "content": "(session ended)"},
+                {"role": "assistant", "content": formatted},
             ],
             "turn_count": turn + 1,
         }
