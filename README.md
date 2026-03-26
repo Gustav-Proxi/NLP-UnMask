@@ -69,7 +69,17 @@ Student Input (Chainlit UI)
 
 ### Concept Prerequisite Graph (Layer 4)
 
-NetworkX DAG of anatomy concepts with prerequisite edges. BKT updates per node per student response. Cold-start solved in v4: diagnostic probe initializes mastery within the first 2 minutes (`correct → 0.5`, `incorrect → 0.1`, `skipped → 0.2`). After 8 min, Pedagogy Agent identifies weakest nodes (`mastery < 0.4`) and schedules revisit before assessment.
+NetworkX DAG of anatomy concepts with prerequisite edges. BKT updates per node per student response. Cold-start solved in v4: diagnostic probe initializes mastery within the first 2 minutes (`correct → 0.5`, `incorrect → 0.1`, `skipped → 0.2`). After 8 min, the Orchestrator identifies the lowest-mastery concept and schedules a proactive revisit.
+
+### Session Mistake Memory (Layer 5)
+
+Every incorrect response appends a structured record to `mistake_log` in `TutoringState`:
+
+```python
+{"topic": "peripheral_nerves.radial", "misconception": "...", "turn": 7, "elapsed_sec": 312.4}
+```
+
+At 8 min (`revisit_after_sec: 480`), the Orchestrator picks the weakest topic and sets `revisit_scheduled=True`. The Retrieval Planner then augments the search query with the topic name, and the Socratic Generator injects the prior misconception into the tutoring prompt to approach the concept from a fresh angle. A 3-minute cooldown (`revisit_cooldown_sec: 180`) prevents re-triggering.
 
 ---
 
@@ -203,12 +213,12 @@ app.py                      # Chainlit entry point
 config.yaml                 # All tunable parameters (PCR thresholds, session timing)
 src/
   graph.py                  # LangGraph state machine
-  state.py                  # TutoringState TypedDict
+  state.py                  # TutoringState TypedDict (incl. mistake_log, revisit_scheduled)
   nodes/
     orchestrator.py         # Phase transition logic (pure Python, zero LLM calls)
     retrieval_planner.py    # PCR filter + hybrid RAG + CRAG loop
     socratic_generator.py   # Structured output masking
-    pedagogy_agent.py       # BKT + concept DAG + mastery update
+    pedagogy_agent.py       # BKT + concept DAG + mastery update + mistake log
   knowledge_base/
     chunks.json             # Anatomy chunks with PCR metadata
     concept_graph.json      # Prerequisite DAG (NetworkX-serialized)

@@ -32,36 +32,28 @@
   University at Buffalo \\
   CSE 635: NLP and Text Mining --- Spring 2026 \\
   Instructor: Prof.\ Rohini K.\ Srihari \\
-  \texttt{\{snikajan, vaishakgi\}@buffalo.edu}}
+  \texttt{\{snajan, vaishakg\}@buffalo.edu}}
 
 \begin{document}
 \maketitle
 
 %% ─────────────────────────────────────────────────────────────
 \begin{abstract}
-We present \textbf{UnMask}, a Socratic AI tutoring system for Occupational
-Therapy (OT) anatomy and neuroscience NBCOT preparation.
-Unlike all prior Socratic AI tutors---which retrieve the correct answer and
-rely on prompting or fine-tuning to suppress it---UnMask enforces answer
-suppression at the \emph{retrieval layer} via \textbf{Progressive Context
-Revelation (PCR)}: a metadata-filtered Qdrant query that physically excludes
-answer chunks from the model's context until the student demonstrates
-prerequisite mastery through a concept prerequisite graph.
-We combine PCR with \textbf{Corrective RAG (CRAG)}, the first application of
-self-correcting retrieval in an educational tutoring context, and a dual-layer
-knowledge masking scheme using structured output schemas.
-Evaluated on 30 anatomy QA triples with a four-variant controlled ablation
-study, the full system achieves: Retrieval Hit Rate 1.000, Answer Leak Rate
-0.000, Avg Socratic Purity 4.93/5, and 100\% adversarial resistance across 20
-jailbreak/social-engineering prompts.
-A key finding: all ablated variants also show 0.000 leak rate under benign
-conditions---but only PCR provides architectural safety that cannot be bypassed
-by sufficiently capable models, at a measured 0.23-point purity cost (4.70
-vs.\ 4.93).
-RAGAS Faithfulness (0.779) falls below target (0.85), revealing a
-measurement mismatch: RAGAS penalizes Socratic questions that make no factual
-claims by design, exposing a gap in evaluation infrastructure for Socratic
-dialogue systems.
+We present \textbf{UnMask}, a Socratic AI tutor for OT anatomy NBCOT prep.
+Unlike all prior Socratic AI tutors, UnMask enforces answer suppression at
+the \emph{retrieval layer} via \textbf{Progressive Context Revelation (PCR)}:
+a metadata-filtered Qdrant query that physically excludes answer chunks until
+the student demonstrates prerequisite mastery.
+We add \textbf{Corrective RAG (CRAG)} (first application in educational tutoring),
+dual-layer structured output masking, and \textbf{session mistake memory}---a
+log of incorrect responses that drives proactive revisit at 8 minutes, armed
+with the student's prior misconception.
+Evaluated on 30 QA triples with a four-variant ablation: Hit Rate 1.000,
+Leak Rate 0.000, Socratic Purity 4.93/5, 100\% adversarial hold rate.
+All ablated variants show 0.000 leak under benign conditions---but only PCR
+provides architectural safety at a measured 0.23-point purity cost (4.70 vs.\ 4.93).
+RAGAS Faithfulness (0.779) exposes a metric mismatch: RAGAS penalizes Socratic
+questions that make no factual claims by design.
 \end{abstract}
 
 %% ─────────────────────────────────────────────────────────────
@@ -238,6 +230,21 @@ After each response, the LLM judges correctness against
 $m' = m + 0.15(1-m)$ if correct; $m' = m - 0.05m$ if incorrect.
 Consecutive correct $\geq 2$ and coverage $\geq 0.80$ triggers phase advance.
 
+\subsection{Session Mistake Memory and Proactive Revisit}
+\label{sec:memory}
+
+Every incorrect response appends a structured record (topic, misconception,
+turn, elapsed seconds) to \texttt{mistake\_log}---an append-only field in state.
+The misconception text comes from the hidden \texttt{InternalAnalysis} at the
+moment of the mistake.
+After 8 minutes the Orchestrator picks the lowest-mastery weak topic, sets
+\texttt{revisit\_scheduled=True} (3-min cooldown prevents looping), and overrides
+\texttt{current\_topic}.
+The Retrieval Planner then augments the Qdrant query with the topic name;
+the Socratic Generator injects the stored misconception into the system prompt
+to guide a fresh-angle question.
+The Pedagogy Agent clears \texttt{revisit\_scheduled} after one turn.
+
 %% ─────────────────────────────────────────────────────────────
 \section{Dataset and Knowledge Base}
 
@@ -277,7 +284,7 @@ T1: Retrieval + Masking & PCR filter + structured output schema & \checkmark \\
 T2: Adaptive Strategy  & LangGraph 4-phase + orchestrator & \checkmark \\
 T3: Assessment         & Clinical scenario + gold-chunk eval & \checkmark \\
 T4: Multimodal         & Chainlit accepts uploads; VLM backend pending & $\circ$ \\
-T5: Memory             & NetworkX DAG + weak-topic revisit & \checkmark \\
+T5: Memory             & Mistake log + proactive revisit at 8 min (§\ref{sec:memory}) & \checkmark \\
 Bonus: Dashboard       & Per-turn mastery panel (\textcolor{red}{$\bullet$}/\textcolor{orange}{$\bullet$}/\textcolor{green}{$\bullet$}) & \checkmark \\
 Generalizability       & Config-only swap; zero code changes & \checkmark \\
 \bottomrule
@@ -459,23 +466,13 @@ adversarial battery exposes.
 PCR's value is not visible in benign evaluations; it is visible only under
 active adversarial pressure.
 
-\paragraph{Cold-start initialization.}
-The 4-question diagnostic probe solves the $P(L_0){=}0$ cold-start problem:
-without it, PCR applies \texttt{context\_only} mode even to students who
-already know the material.
-The probe derives individual priors from demonstrated performance within 90
-seconds---more personalized than BKT's population-level $P(L_0)$
-parameters~\cite{corbett1994}.
-
-\paragraph{CRAG's educational motivation.}
-In open-domain QA, CRAG prevents irrelevant documents from grounding incorrect answers.
-In educational tutoring, irrelevant retrievals additionally produce off-topic Socratic
-questions that break clinical reasoning threads.
-The ablation timing evidence (186s stall at q18 vs.\ typical 8s) confirms CRAG fires
-in realistic deployment.
-Task 4 (VLM diagram tutoring) remains the primary outstanding gap: Chainlit accepts
-image uploads, but the VLM backend (MedGemma 4B or GPT-4o Vision) is not yet
-integrated; PCR applies identically via \texttt{concept} metadata with no code changes.
+\paragraph{Cold-start and CRAG.}
+The 4-question diagnostic probe solves the cold-start problem: without it, PCR
+applies \texttt{context\_only} even to students who already know the material.
+CRAG prevents off-topic Socratic questions caused by irrelevant retrievals; the
+186s ablation stall at q18 confirms it fires in realistic deployment.
+Task~4 (VLM diagram tutoring) is the primary outstanding gap: Chainlit accepts
+image uploads but the VLM backend is not yet integrated.
 
 %% ─────────────────────────────────────────────────────────────
 \section{Conclusion}
