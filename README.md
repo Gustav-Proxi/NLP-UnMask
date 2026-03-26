@@ -116,13 +116,17 @@ The concept graph auto-generates from the OpenStax Physics 2e table of contents 
 
 ## Setup
 
-**Requirements:** Python 3.11+, Ollama (for local Llama), no Docker needed (Qdrant runs in local file mode)
+**Requirements:** Python 3.11+, no Docker needed (Qdrant runs in local file mode)
 
 ```bash
 # 1. Install dependencies
 pip install -r requirements.txt
 
-# 2. Configure environment
+# 2. Install and start Ollama (for local Llama 3.1 8B — used in rapport/wrapup phases)
+# Download Ollama from https://ollama.com, then:
+ollama pull llama3.1
+
+# 3. Configure environment
 cp .env.example .env
 # Fill in: OPENAI_API_KEY, OPENAI_BASE_URL, GOOGLE_API_KEY
 ```
@@ -138,11 +142,11 @@ QDRANT_COLLECTION=unmask_anatomy
 ```
 
 ```bash
-# 3. Index the knowledge base
+# 4. Index the knowledge base
 python scripts/index_kb.py           # initial index
 python scripts/index_kb.py --recreate  # drop and rebuild
 
-# 4. Run the tutor
+# 5. Run the tutor (available at http://localhost:8000)
 chainlit run app.py
 ```
 
