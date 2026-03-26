@@ -1,15 +1,39 @@
 [
   {
     "id": "sc_anatomy_ctx",
-    "text": "The spinal cord is a cylindrical bundle of nerve fibers and associated tissue enclosed within the vertebral column. It extends from the medulla oblongata to approximately the L1-L2 vertebral level in adults. The spinal cord contains 31 pairs of spinal nerves, each with a dorsal (sensory) root and a ventral (motor) root.",
+    "text": "The spinal cord is a cylindrical bundle of nerve fibers enclosed within the vertebral column, extending from the medulla oblongata at the foramen magnum to approximately the L1-L2 vertebral level in adults, where it terminates as the conus medullaris. Below this point, lumbar and sacral nerve roots form the cauda equina. The spinal cord has cervical and lumbar enlargements corresponding to the origins of the brachial and lumbosacral plexuses. In cross-section, grey matter (H-shaped) is surrounded by white matter tracts.",
     "topic": "spinal_cord",
     "concept": "spinal_cord.anatomy",
     "is_answer_chunk": false,
     "chunk_type": "context"
   },
   {
+    "id": "sc_anatomy_ans",
+    "text": "The spinal cord contains 31 pairs of spinal nerves: 8 cervical (C1-C8), 12 thoracic (T1-T12), 5 lumbar (L1-L5), 5 sacral (S1-S5), and 1 coccygeal. Each spinal nerve is formed by the union of a dorsal root (carrying sensory fibers from the dorsal root ganglion) and a ventral root (carrying motor fibers from anterior horn cells). The dorsal root ganglion contains cell bodies of sensory neurons and is located in or near the intervertebral foramen.",
+    "topic": "spinal_cord",
+    "concept": "spinal_cord.anatomy",
+    "is_answer_chunk": true,
+    "chunk_type": "answer"
+  },
+  {
+    "id": "sc_anatomy_clinical",
+    "text": "OT clinical relevance: Cervical spinal cord injuries (C5-C8) directly affect brachial plexus function and upper extremity use in ADLs. The level of injury predicts functional outcomes: C5 injury preserves shoulder flexion and elbow flexion (biceps) but loses wrist extension, limiting most hand function. C6 preserves wrist extension, enabling tenodesis grasp. C7 preserves elbow extension and wrist flexion. Understanding spinal cord levels is foundational for OT adaptive equipment prescription and splinting goals.",
+    "topic": "spinal_cord",
+    "concept": "spinal_cord.anatomy",
+    "is_answer_chunk": false,
+    "chunk_type": "context"
+  },
+  {
+    "id": "sc_anterior_rami_prereq",
+    "text": "After a spinal nerve exits the intervertebral foramen, it immediately divides into two main branches: the dorsal ramus (posterior ramus) and the ventral ramus (anterior ramus). The dorsal rami are smaller and supply the deep muscles and skin of the back. The ventral rami are larger and supply the anterolateral trunk and all four limbs. For the upper limb, it is the ventral rami of cervical and upper thoracic nerves that matter.",
+    "topic": "spinal_cord",
+    "concept": "spinal_cord.anterior_rami",
+    "is_answer_chunk": false,
+    "chunk_type": "prerequisite"
+  },
+  {
     "id": "sc_anterior_rami_ans",
-    "text": "Each spinal nerve divides shortly after leaving the vertebral column into dorsal and ventral rami. The ventral (anterior) rami of spinal nerves C5 through T1 form the brachial plexus. The ventral rami are larger than the dorsal rami and supply the limbs and the anterolateral trunk.",
+    "text": "The ventral (anterior) rami of spinal nerves C5, C6, C7, C8, and T1 converge to form the brachial plexus. These are the five root contributions that supply the entire upper extremity. The ventral rami pass between the anterior and middle scalene muscles (the scalene triangle) before entering the posterior triangle of the neck to form the plexus. Thoracic outlet syndrome can compress these roots in the scalene triangle, producing upper extremity symptoms.",
     "topic": "spinal_cord",
     "concept": "spinal_cord.anterior_rami",
     "is_answer_chunk": true,
@@ -17,7 +41,7 @@
   },
   {
     "id": "bp_origin_ctx",
-    "text": "The brachial plexus is a complex network of nerve fibers that supplies the upper extremity. It arises from the neck and passes through the axilla to distribute branches to the shoulder, arm, forearm, and hand. The plexus lies posterior to the clavicle and anterior to the serratus anterior muscle.",
+    "text": "The brachial plexus is the neural network that supplies sensation and motor control to the entire upper extremity except for the trapezius (spinal accessory nerve, CN XI) and a small area of axillary skin. It is formed in the posterior triangle of the neck, passes over the first rib, continues behind the clavicle, and enters the axilla. The plexus accompanies the axillary artery throughout its course.",
     "topic": "brachial_plexus",
     "concept": "brachial_plexus.origin",
     "is_answer_chunk": false,
@@ -25,15 +49,31 @@
   },
   {
     "id": "bp_origin_ans",
-    "text": "The brachial plexus is formed by the anterior (ventral) rami of spinal nerves C5, C6, C7, C8, and T1. A small contribution from C4 may occur (prefixed plexus) and occasionally from T2 (postfixed). These five roots are the foundation from which all terminal branches of the arm ultimately originate.",
+    "text": "The brachial plexus originates from the ventral rami of C5, C6, C7, C8, and T1. A prefixed plexus receives a C4 contribution; a postfixed plexus includes T2. The mnemonic for the organization is: 'Randy Travis Drinks Cold Beer' (Roots, Trunks, Divisions, Cords, Branches). The roots emerge from between the anterior and middle scalene muscles and unite to form three trunks at the lateral border of the scalene triangle.",
     "topic": "brachial_plexus",
     "concept": "brachial_plexus.origin",
     "is_answer_chunk": true,
     "chunk_type": "answer"
   },
   {
+    "id": "bp_origin_clinical",
+    "text": "OT clinical relevance: Brachial plexus birth injuries (BPBI) affect infants during difficult deliveries. Upper plexus injuries (C5-C6 roots, Erb's palsy) cause the 'waiter's tip' posture: shoulder adducted and internally rotated, elbow extended and pronated, wrist flexed. Lower plexus injuries (C8-T1 roots, Klumpke's paralysis) cause claw hand and Horner syndrome. OT intervention focuses on range-of-motion, positioning, splinting, and parent education. NBCOT frequently tests the functional implications of each root level.",
+    "topic": "brachial_plexus",
+    "concept": "brachial_plexus.origin",
+    "is_answer_chunk": false,
+    "chunk_type": "context"
+  },
+  {
+    "id": "bp_origin_figure",
+    "text": "Figure: Brachial plexus diagram showing five roots (C5-T1) emerging from between scalene muscles. Roots converge to three trunks (superior/upper from C5-C6, middle from C7, inferior/lower from C8-T1). Each trunk splits into anterior and posterior divisions (six total). Anterior divisions of upper and middle trunks form the lateral cord; anterior division of lower trunk forms the medial cord; all three posterior divisions form the posterior cord. The three cords surround the axillary artery.",
+    "topic": "brachial_plexus",
+    "concept": "brachial_plexus.origin",
+    "is_answer_chunk": false,
+    "chunk_type": "figure"
+  },
+  {
     "id": "bp_trunks_prereq",
-    "text": "After the five roots of the brachial plexus emerge from between the anterior and middle scalene muscles, they reorganize into trunks. This reorganization marks the transition from root-level anatomy to trunk-level anatomy, which is important for understanding nerve injury localization.",
+    "text": "After the five roots of the brachial plexus emerge from between the scalene muscles, they reorganize into three trunks at the posterior triangle of the neck near the first rib. This trunk formation is clinically significant because injuries at this level — such as those from traction during birth or a shoulder pad impact — produce characteristic patterns that differ from root-level injuries. Identifying the trunk level of injury guides prognosis and rehabilitation.",
     "topic": "brachial_plexus",
     "concept": "brachial_plexus.trunks",
     "is_answer_chunk": false,
@@ -41,15 +81,23 @@
   },
   {
     "id": "bp_trunks_ans",
-    "text": "The five roots of the brachial plexus converge to form three trunks: (1) The upper trunk is formed by the union of C5 and C6 roots. (2) The middle trunk is a continuation of the C7 root alone. (3) The lower trunk is formed by the union of C8 and T1 roots. Erb's point is where C5 and C6 unite; injury here causes Erb's palsy.",
+    "text": "Three trunks form from the five roots: (1) Upper (superior) trunk: union of C5 and C6 roots. (2) Middle trunk: continuation of C7 alone. (3) Lower (inferior) trunk: union of C8 and T1 roots. Erb's point is the junction of C5 and C6 (and sometimes C4), located just superior to the clavicle. An upper trunk lesion (Erb-Duchenne palsy) causes: loss of shoulder abduction, elbow flexion, forearm supination, and wrist extension — producing the classic 'waiter's tip' posture. A lower trunk lesion (Klumpke's palsy) causes intrinsic hand muscle weakness and claw hand.",
     "topic": "brachial_plexus",
     "concept": "brachial_plexus.trunks",
     "is_answer_chunk": true,
     "chunk_type": "answer"
   },
   {
+    "id": "bp_trunks_clinical",
+    "text": "OT clinical assessment for trunk-level injuries: Upper trunk (Erb's palsy) — test shoulder abduction (deltoid, C5-C6), elbow flexion (biceps, C5-C6), and forearm supination. Functional impact: inability to feed self, comb hair, or reach overhead. Lower trunk (Klumpke's) — test intrinsic hand muscles (finger abduction/adduction, grip), note claw hand. Functional impact: loss of precision pinch and grip, affecting writing, buttoning, and fine tool use. OT interventions include serial casting, dynamic splinting, and adaptive strategies for ADL performance.",
+    "topic": "brachial_plexus",
+    "concept": "brachial_plexus.trunks",
+    "is_answer_chunk": false,
+    "chunk_type": "context"
+  },
+  {
     "id": "bp_divisions_ctx",
-    "text": "Each of the three trunks of the brachial plexus divides into an anterior and a posterior division, yielding six divisions total. This division is significant because it determines whether fibers will eventually supply flexor (anterior division) or extensor (posterior division) compartments of the upper limb.",
+    "text": "Each of the three brachial plexus trunks divides into an anterior and a posterior division, yielding six divisions in total. This bifurcation occurs posterior to the clavicle. The anterior divisions ultimately supply the flexor (anterior) compartments of the upper limb, while the posterior divisions supply the extensor (posterior) compartments. Understanding this anterior-posterior segregation is key to interpreting which movements are affected by cord-level vs. trunk-level lesions.",
     "topic": "brachial_plexus",
     "concept": "brachial_plexus.divisions",
     "is_answer_chunk": false,
@@ -57,7 +105,7 @@
   },
   {
     "id": "bp_divisions_ans",
-    "text": "Each trunk divides into anterior and posterior divisions. The anterior divisions supply the flexor compartments; posterior divisions supply the extensor compartments. The posterior divisions of all three trunks unite to form the posterior cord. The anterior divisions of the upper and middle trunks form the lateral cord, while the anterior division of the lower trunk forms the medial cord.",
+    "text": "Six divisions arise from three trunks. Each trunk produces one anterior and one posterior division. Rule: anterior divisions → flexors; posterior divisions → extensors. The regrouping of divisions into cords is: Lateral cord = anterior divisions of upper + middle trunks (C5-C7). Medial cord = anterior division of lower trunk (C8-T1). Posterior cord = posterior divisions of all three trunks (C5-T1). No named nerves arise directly from the divisions; they are a transitional zone.",
     "topic": "brachial_plexus",
     "concept": "brachial_plexus.divisions",
     "is_answer_chunk": true,
@@ -65,7 +113,7 @@
   },
   {
     "id": "bp_cords_ctx",
-    "text": "The divisions of the brachial plexus regroup to form three cords — lateral, medial, and posterior — named according to their relationship to the axillary artery. This relationship to the axillary artery is the anatomical landmark used to identify cord positions on imaging and in surgery.",
+    "text": "The three cords of the brachial plexus — lateral, medial, and posterior — are named for their position relative to the second part of the axillary artery. They form in the axilla, posterior to the pectoralis minor muscle. Short branches arise from the cords to supply muscles around the shoulder (long thoracic nerve, thoracodorsal nerve, subscapular nerves), and then each cord terminates in major peripheral nerve branches.",
     "topic": "brachial_plexus",
     "concept": "brachial_plexus.cords",
     "is_answer_chunk": false,
@@ -73,15 +121,23 @@
   },
   {
     "id": "bp_cords_ans",
-    "text": "Three cords are formed from the divisions: (1) Lateral cord (C5-C7): from anterior divisions of upper and middle trunks. Gives rise to the musculocutaneous nerve and the lateral head of the median nerve. (2) Medial cord (C8-T1): from anterior division of lower trunk. Gives rise to the ulnar nerve and the medial head of the median nerve. (3) Posterior cord (C5-T1): from all three posterior divisions. Gives rise to the axillary nerve and radial nerve.",
+    "text": "Three cords and their terminal branches: (1) Lateral cord (C5-C7): musculocutaneous nerve (sole terminal) + lateral root of median nerve. Mnemonic: 'Lateral cord is LLMC — Lateral pectoral, Lateral root of Median, Musculocutaneous.' (2) Medial cord (C8-T1): ulnar nerve + medial root of median nerve. Also: medial pectoral, medial cutaneous nerves of arm and forearm. (3) Posterior cord (C5-T1): radial nerve + axillary nerve. Also: thoracodorsal, upper and lower subscapular nerves. The median nerve is unique: it receives contributions from BOTH lateral and medial cords.",
     "topic": "brachial_plexus",
     "concept": "brachial_plexus.cords",
     "is_answer_chunk": true,
     "chunk_type": "answer"
   },
   {
+    "id": "bp_cords_clinical",
+    "text": "OT clinical relevance of cord-level injuries: Lateral cord injury (C5-C7) — loss of elbow flexion (musculocutaneous) and thumb/lateral finger sensation (lateral median root), but grip preserved. Medial cord injury (C8-T1) — loss of intrinsic hand function (ulnar) and medial median thenar function, producing claw hand with thenar wasting. Posterior cord injury (C5-T1) — loss of all extensors (radial nerve) and shoulder abduction/external rotation (axillary nerve), the most debilitating cord injury for upper-extremity ADLs.",
+    "topic": "brachial_plexus",
+    "concept": "brachial_plexus.cords",
+    "is_answer_chunk": false,
+    "chunk_type": "context"
+  },
+  {
     "id": "bp_terminal_ctx",
-    "text": "The terminal branches of the brachial plexus are the named peripheral nerves that distribute to specific muscles and skin areas of the upper extremity. Each terminal nerve carries fibers from multiple spinal levels, which is why single-nerve lesions produce characteristic but often partial sensory and motor deficits.",
+    "text": "The five terminal branches of the brachial plexus are the major named peripheral nerves of the upper extremity. Each carries fibers from multiple spinal cord levels, making spinal root anatomy and peripheral nerve anatomy complementary but distinct. A peripheral nerve lesion produces a predictable pattern of motor and sensory loss that differs from a root lesion. OT practitioners must be able to distinguish these patterns to plan appropriate interventions.",
     "topic": "brachial_plexus",
     "concept": "brachial_plexus.terminal_branches",
     "is_answer_chunk": false,
@@ -89,71 +145,143 @@
   },
   {
     "id": "bp_terminal_ans",
-    "text": "The five major terminal branches of the brachial plexus are: (1) Musculocutaneous nerve (C5-C7) — from lateral cord, supplies biceps brachii and brachialis (elbow flexion). (2) Median nerve (C5-T1) — from both lateral and medial cords, supplies most forearm flexors and thenar muscles. (3) Ulnar nerve (C8-T1) — from medial cord, supplies intrinsic hand muscles and hypothenar muscles. (4) Radial nerve (C5-T1) — from posterior cord, supplies all extensors of upper limb. (5) Axillary nerve (C5-C6) — from posterior cord, supplies deltoid and teres minor.",
+    "text": "The five major terminal branches of the brachial plexus are: (1) Musculocutaneous nerve (C5-C7) — lateral cord; biceps brachii, brachialis, coracobrachialis; forearm lateral cutaneous sensation. (2) Median nerve (C5-T1) — lateral + medial cords; forearm flexors, thenar muscles, lateral 3.5 finger sensation. (3) Ulnar nerve (C8-T1) — medial cord; intrinsic hand muscles, medial 1.5 finger sensation. (4) Radial nerve (C5-T1) — posterior cord; all extensors, dorsal hand sensation. (5) Axillary nerve (C5-C6) — posterior cord; deltoid, teres minor, lateral arm sensation.",
     "topic": "brachial_plexus",
     "concept": "brachial_plexus.terminal_branches",
     "is_answer_chunk": true,
     "chunk_type": "answer"
   },
   {
-    "id": "axillary_ctx",
-    "text": "The axillary nerve leaves the brachial plexus at the axilla and passes through the quadrilateral space (bounded by the teres major, teres minor, long head of triceps, and humerus). Dislocation of the shoulder joint or fracture of the surgical neck of the humerus can stretch or tear the axillary nerve.",
+    "id": "bp_terminal_figure",
+    "text": "Figure: Upper extremity nerve territory map. Lateral arm and forearm: axillary and musculocutaneous (lateral cutaneous of forearm). Medial arm and forearm: medial cutaneous nerves from medial cord. Dorsal hand: radial nerve (lateral dorsum) and ulnar nerve (medial dorsum). Palmar surface: median nerve (lateral 3.5 fingers + thenar eminence), ulnar nerve (medial 1.5 fingers + hypothenar). Understanding these territories is required for dermatomal testing on the NBCOT exam.",
+    "topic": "brachial_plexus",
+    "concept": "brachial_plexus.terminal_branches",
+    "is_answer_chunk": false,
+    "chunk_type": "figure"
+  },
+  {
+    "id": "pn_axillary_ctx",
+    "text": "The axillary nerve (C5-C6) arises from the posterior cord of the brachial plexus in the axilla and winds posteriorly through the quadrilateral space — bounded superiorly by teres minor, inferiorly by teres major, medially by the long head of triceps, and laterally by the surgical neck of the humerus. Shoulder dislocation (anterior) and surgical neck of humerus fractures are the two most common causes of axillary nerve injury.",
     "topic": "peripheral_nerves",
     "concept": "peripheral_nerves.axillary",
     "is_answer_chunk": false,
     "chunk_type": "context"
   },
   {
-    "id": "axillary_ans",
-    "text": "The axillary nerve (C5-C6) arises from the posterior cord of the brachial plexus. It innervates: (1) Deltoid muscle — responsible for shoulder abduction (especially 15-90°), flexion, and extension. (2) Teres minor — external rotation of the shoulder. (3) Skin over the lateral arm (regimental badge area). Injury causes: inability to abduct the shoulder past 15°, loss of sensation over lateral arm, flat shoulder appearance due to deltoid atrophy.",
+    "id": "pn_axillary_ans",
+    "text": "The axillary nerve (C5-C6) from the posterior cord supplies: (1) Deltoid — all three heads (anterior: flexion/internal rotation; middle: abduction 15-90°; posterior: extension/external rotation). (2) Teres minor — external rotation of shoulder (rotator cuff). (3) Cutaneous branch — sensation over lateral arm ('regimental badge area'). Axillary nerve injury presentation: inability to initiate or sustain shoulder abduction past 15°, loss of shoulder roundness (flat/squared appearance from deltoid atrophy), numbness over lateral arm, and preserved elbow and hand function.",
     "topic": "peripheral_nerves",
     "concept": "peripheral_nerves.axillary",
     "is_answer_chunk": true,
     "chunk_type": "answer"
   },
   {
-    "id": "radial_ctx",
-    "text": "The radial nerve is the largest branch of the brachial plexus and the only one to supply the extensor compartments throughout the entire upper limb. It spirals around the posterior humerus in the radial (spiral) groove before piercing the lateral intermuscular septum to enter the anterior compartment of the arm.",
+    "id": "pn_axillary_clinical",
+    "text": "OT assessment for axillary nerve injury: Manual muscle test (MMT) deltoid abduction — isolate by stabilizing scapula, test abduction at 90° against resistance. Test external rotation with elbow at side. Assess sensation over lateral arm (regimental badge area). Functional implications: inability to place hand in space for ADLs (feeding, dressing, grooming). OT interventions: sling for shoulder protection acutely, strengthening as nerve recovers (3-6 months for neuropraxia), adaptive equipment for one-handed ADL performance during recovery.",
+    "topic": "peripheral_nerves",
+    "concept": "peripheral_nerves.axillary",
+    "is_answer_chunk": false,
+    "chunk_type": "context"
+  },
+  {
+    "id": "pn_axillary_assessment",
+    "text": "NBCOT scenario: A 28-year-old sustained an anterior shoulder dislocation while playing basketball. After reduction, he reports numbness over the lateral arm and difficulty initiating shoulder abduction. Which nerve is injured, what are the specific muscles affected, and what functional tasks would most be impaired? Answer key: axillary nerve injury; deltoid (all three heads) and teres minor affected; tasks requiring shoulder abduction — overhead reaching, placing dishes in cupboards, donning pullover shirts — all impaired.",
+    "topic": "peripheral_nerves",
+    "concept": "peripheral_nerves.axillary",
+    "is_answer_chunk": true,
+    "chunk_type": "answer"
+  },
+  {
+    "id": "pn_radial_ctx",
+    "text": "The radial nerve (C5-T1) is the largest branch of the brachial plexus, arising from the posterior cord. It exits the axilla through the triangular interval, winds around the posterior humerus in the radial (spiral) groove between the medial and lateral heads of triceps, pierces the lateral intermuscular septum at the distal third of the humerus, and enters the cubital fossa anterior to the lateral epicondyle. It then divides into the superficial (sensory) branch and the deep branch (posterior interosseous nerve, or PIN).",
     "topic": "peripheral_nerves",
     "concept": "peripheral_nerves.radial",
     "is_answer_chunk": false,
     "chunk_type": "context"
   },
   {
-    "id": "radial_ans",
-    "text": "The radial nerve (C5-T1) arises from the posterior cord. It innervates all extensors of the arm, forearm, and wrist: triceps brachii, brachioradialis, extensor carpi radialis longus and brevis, and via the posterior interosseous nerve (deep branch), all other extensor muscles of the forearm. Injury in the spiral groove causes wrist drop (inability to extend wrist), finger drop, and sensory loss over dorsal hand. Triceps function is spared with mid-shaft humeral fracture.",
+    "id": "pn_radial_ans",
+    "text": "The radial nerve (C5-T1, posterior cord) is the sole supply to ALL extensors of the upper limb. Muscles innervated: triceps (elbow extension), brachioradialis (elbow flexion in mid-pronation), extensor carpi radialis longus and brevis (wrist extension), and via the posterior interosseous nerve (PIN): extensor carpi ulnaris, extensor digitorum communis, extensor indicis, extensor digiti minimi, abductor pollicis longus, extensor pollicis longus and brevis. Injury in the spiral groove (mid-shaft humeral fracture): wrist drop (inability to extend wrist), finger drop, and sensory loss over anatomical snuffbox and dorsal lateral hand. Triceps is SPARED in spiral groove injury because triceps branches arise above this level.",
     "topic": "peripheral_nerves",
     "concept": "peripheral_nerves.radial",
     "is_answer_chunk": true,
     "chunk_type": "answer"
   },
   {
-    "id": "median_ctx",
-    "text": "The median nerve passes through the antecubital fossa medial to the brachial artery, enters the forearm between the two heads of pronator teres, and descends through the forearm in the plane between flexor digitorum superficialis and profundus. It enters the hand through the carpal tunnel beneath the flexor retinaculum.",
+    "id": "pn_radial_clinical",
+    "text": "OT clinical assessment for radial nerve injury: Test wrist extension (extensor carpi radialis), finger extension at MCP joints (extensor digitorum), thumb extension and abduction. Sensation over dorsolateral hand and anatomical snuffbox. Functional impact of wrist drop: loss of tenodesis effect eliminates passive grip; unable to extend wrist for power grasp; cannot oppose thumb. OT interventions: cock-up wrist splint (wrist extension 30-35°) to restore tenodesis grasp function during recovery; dynamic extension splint for finger drop if PIN involved; progressive strengthening.",
+    "topic": "peripheral_nerves",
+    "concept": "peripheral_nerves.radial",
+    "is_answer_chunk": false,
+    "chunk_type": "context"
+  },
+  {
+    "id": "pn_radial_assessment",
+    "text": "NBCOT scenario: A carpenter presents 6 weeks after a mid-shaft humeral fracture fixed with a plate. She reports inability to extend her wrist and fingers but can extend her elbow. Which nerve is injured, at what level, and what splint would best restore her hand function for work tasks? Answer key: Radial nerve injury in the spiral groove (triceps spared = above spiral groove preserved). Static wrist extension splint (cock-up splint) at 30-35° extension restores tenodesis to allow grip. Dynamic MCP extension splint if finger drop prominent.",
+    "topic": "peripheral_nerves",
+    "concept": "peripheral_nerves.radial",
+    "is_answer_chunk": true,
+    "chunk_type": "answer"
+  },
+  {
+    "id": "pn_median_ctx",
+    "text": "The median nerve (C5-T1) arises from both the lateral cord (C5-C7, via the lateral root) and the medial cord (C8-T1, via the medial root), which unite anterior to the axillary artery to form the median nerve. It descends medial to the brachial artery through the arm (giving no branches in the arm), enters the forearm between the two heads of pronator teres, and travels deep to flexor digitorum superficialis. It enters the hand via the carpal tunnel beneath the transverse carpal ligament (flexor retinaculum).",
     "topic": "peripheral_nerves",
     "concept": "peripheral_nerves.median",
     "is_answer_chunk": false,
     "chunk_type": "context"
   },
   {
-    "id": "median_ans",
-    "text": "The median nerve (C5-T1) arises from both the lateral and medial cords. It supplies: forearm pronators (pronator teres, pronator quadratus), most wrist and finger flexors (except flexor carpi ulnaris and medial two FDP), thenar muscles (opponens pollicis, abductor pollicis brevis, superficial head of flexor pollicis brevis), and first two lumbricals. Injury at wrist (carpal tunnel syndrome) causes Ape hand deformity: thenar wasting, loss of thumb opposition, and sensory loss over lateral 3.5 fingers.",
+    "id": "pn_median_ans",
+    "text": "The median nerve (C5-T1, lateral + medial cords) supplies: (1) Pronator teres and pronator quadratus (forearm pronation). (2) Most forearm flexors: flexor carpi radialis, palmaris longus, flexor digitorum superficialis, flexor digitorum profundus (lateral two digits), flexor pollicis longus. (3) Thenar muscles: opponens pollicis, abductor pollicis brevis, superficial head of flexor pollicis brevis (mnemonic: LOAF — Lumbricals 1&2, Opponens pollicis, Abductor pollicis brevis, Flexor pollicis brevis). (4) Sensory: lateral 3.5 fingers (palmar) and distal dorsal surface of same fingers. Wrist-level injury (CTS): thenar wasting, ape hand deformity (flattened thenar eminence), loss of thumb opposition, positive Phalen's and Tinel's tests.",
     "topic": "peripheral_nerves",
     "concept": "peripheral_nerves.median",
     "is_answer_chunk": true,
     "chunk_type": "answer"
   },
   {
-    "id": "ulnar_ctx",
-    "text": "The ulnar nerve runs medially through the arm without giving off any branches, passes posterior to the medial epicondyle of the humerus (the 'funny bone' groove), and enters the forearm between the two heads of flexor carpi ulnaris. It crosses the wrist superficially via Guyon's canal.",
+    "id": "pn_median_clinical",
+    "text": "Carpal tunnel syndrome (CTS) is the most common peripheral nerve entrapment neuropathy, affecting 3-6% of adults. OT assessment: Phalen's test (wrist held in full flexion 60 seconds — positive if paresthesias reproduced in median distribution); Tinel's sign (tapping over carpal tunnel — positive if electric shock sensation in median distribution); thenar wasting (chronic CTS); two-point discrimination over thumb and index finger. OT interventions: custom thermoplastic wrist cock-up splint in neutral (0° extension) worn at night; activity modification; ergonomic assessment; progressive exercises. Surgery (carpal tunnel release) indicated for persistent or severe cases.",
+    "topic": "peripheral_nerves",
+    "concept": "peripheral_nerves.median",
+    "is_answer_chunk": false,
+    "chunk_type": "context"
+  },
+  {
+    "id": "pn_median_assessment",
+    "text": "NBCOT scenario: A 45-year-old office worker reports 3 months of numbness and tingling in her thumb, index, and middle fingers, worse at night and when holding a phone or steering wheel. She has mild thenar wasting. Which nerve is compressed, where, what clinical tests confirm this, and what is the first-line OT intervention? Answer key: Median nerve compressed in carpal tunnel (CTS). Confirmatory tests: Phalen's (wrist flexion 60s) and Tinel's over carpal tunnel. First-line OT: custom wrist neutral splint for nighttime wear, activity modification to reduce wrist flexion/extension, ergonomic workstation assessment.",
+    "topic": "peripheral_nerves",
+    "concept": "peripheral_nerves.median",
+    "is_answer_chunk": true,
+    "chunk_type": "answer"
+  },
+  {
+    "id": "pn_ulnar_ctx",
+    "text": "The ulnar nerve (C8-T1) arises from the medial cord of the brachial plexus, passes medially through the arm giving no branches, and winds posterior to the medial epicondyle of the humerus in the cubital tunnel (ulnar groove). This is the most common site of ulnar nerve compression — cubital tunnel syndrome. The nerve then enters the forearm between the two heads of flexor carpi ulnaris, travels along the medial forearm, crosses the wrist via Guyon's canal (between the pisiform and hook of hamate), and enters the hand.",
     "topic": "peripheral_nerves",
     "concept": "peripheral_nerves.ulnar",
     "is_answer_chunk": false,
     "chunk_type": "context"
   },
   {
-    "id": "ulnar_ans",
-    "text": "The ulnar nerve (C8-T1) arises from the medial cord. It supplies: flexor carpi ulnaris, medial two heads of flexor digitorum profundus, all intrinsic hand muscles (interossei, hypothenar muscles, medial two lumbricals), and adductor pollicis. Injury at elbow causes claw hand deformity (more prominent in ring/little fingers), loss of finger abduction/adduction, and sensory loss over medial 1.5 fingers and medial palm.",
+    "id": "pn_ulnar_ans",
+    "text": "The ulnar nerve (C8-T1, medial cord) supplies: (1) In forearm: flexor carpi ulnaris (wrist flexion/ulnar deviation), medial two heads of flexor digitorum profundus (DIP flexion of ring/little fingers). (2) In hand: all interossei (finger abduction/adduction, MCP flexion, IP extension), hypothenar muscles (abductor/flexor/opponens digiti minimi), medial two lumbricals (ring/little MCP flexion), adductor pollicis. (3) Sensory: medial 1.5 fingers (palmar and dorsal) and medial palm. Injury at elbow: claw hand deformity (hyperextension at MCPs, flexion at IPs of ring and little fingers — 'ulnar paradox': lesion at elbow causes less clawing than wrist lesion because FDP to ring/little is also lost). Froment's sign: positive (patient flexes thumb IP joint when pinching paper, compensating for absent adductor pollicis).",
+    "topic": "peripheral_nerves",
+    "concept": "peripheral_nerves.ulnar",
+    "is_answer_chunk": true,
+    "chunk_type": "answer"
+  },
+  {
+    "id": "pn_ulnar_clinical",
+    "text": "Cubital tunnel syndrome OT assessment: Symptoms — paresthesias along medial forearm and medial 1.5 fingers, worse with elbow flexion. Tests: elbow flexion test (hold elbow in full flexion 60 seconds — reproduces symptoms); Tinel's at cubital tunnel; assess finger abduction/adduction (interossei), little finger abduction (abductor digiti minimi), Froment's sign (adductor pollicis). OT interventions: elbow extension splint (night — prevents prolonged elbow flexion, the position of greatest ulnar nerve stretch); activity modification to avoid sustained elbow flexion; padding over cubital tunnel for protection; hand strengthening as nerve recovers.",
+    "topic": "peripheral_nerves",
+    "concept": "peripheral_nerves.ulnar",
+    "is_answer_chunk": false,
+    "chunk_type": "context"
+  },
+  {
+    "id": "pn_ulnar_assessment",
+    "text": "NBCOT scenario: A 50-year-old office manager reports numbness in his ring and little fingers for 4 months, worse when driving with elbow bent on the window edge. He has weakness pinching paper with his thumb. Froment's sign is positive. Which nerve is compressed, where, what does Froment's sign test, and what is the priority OT splint? Answer key: Ulnar nerve compressed at cubital tunnel (medial epicondyle). Froment's sign tests adductor pollicis (ulnar nerve) — thumb IP flexion compensates for absent thumb adduction. Priority splint: long arm splint or elbow extension splint to prevent elbow flexion > 30° especially at night.",
     "topic": "peripheral_nerves",
     "concept": "peripheral_nerves.ulnar",
     "is_answer_chunk": true,
@@ -161,7 +289,7 @@
   },
   {
     "id": "rc_muscles_ctx",
-    "text": "The rotator cuff is a group of four muscles that surround the glenohumeral joint, forming a cuff of tendons that blend with the joint capsule. These muscles are collectively responsible for stabilizing the humeral head against the glenoid fossa, preventing superior migration during deltoid contraction.",
+    "text": "The rotator cuff consists of four muscles that originate from the scapula and insert onto the proximal humerus, forming a cuff of tendons that blends with the glenohumeral joint capsule. Their primary role is dynamic stabilization of the glenohumeral joint — they compress the humeral head into the glenoid fossa and counteract the superior translating force of the deltoid during shoulder abduction. The supraspinatus is the most commonly injured rotator cuff muscle, especially the 'critical zone' 1 cm from its insertion.",
     "topic": "rotator_cuff",
     "concept": "rotator_cuff.muscles",
     "is_answer_chunk": false,
@@ -169,34 +297,90 @@
   },
   {
     "id": "rc_muscles_ans",
-    "text": "The four rotator cuff muscles (mnemonic SITS): (1) Supraspinatus — superior part of cuff, initiates abduction (first 15°), innervated by suprascapular nerve (C5-C6). (2) Infraspinatus — posterior, external rotation, suprascapular nerve (C5-C6). (3) Teres Minor — posterior, external rotation, axillary nerve (C5-C6). (4) Subscapularis — anterior, internal rotation and adduction, subscapular nerves (C5-C6). The supraspinatus tendon is most commonly torn (insertion on greater tubercle of humerus).",
+    "text": "The four rotator cuff muscles (mnemonic SITS — Supraspinatus, Infraspinatus, Teres minor, Subscapularis): (1) Supraspinatus (suprascapular nerve, C5-C6): abduction initiation (0-15°), superior cuff. (2) Infraspinatus (suprascapular nerve, C5-C6): external rotation, posterior cuff. (3) Teres minor (axillary nerve, C5-C6): external rotation, posterior-inferior cuff. (4) Subscapularis (upper and lower subscapular nerves, C5-C6): internal rotation and adduction, anterior cuff — the only muscle on the anterior scapular surface. Note: Infraspinatus and teres minor together are the primary external rotators; together they resist the internal rotation tendency of the pectoralis major and latissimus dorsi.",
     "topic": "rotator_cuff",
     "concept": "rotator_cuff.muscles",
     "is_answer_chunk": true,
     "chunk_type": "answer"
   },
   {
+    "id": "rc_muscles_clinical",
+    "text": "OT clinical relevance: Rotator cuff tears are among the most common shoulder conditions referred to OT. Full-thickness tears may require surgical repair followed by structured OT rehabilitation. OT post-surgical protocol: Phase 1 (0-6 weeks): pendulum exercises, passive ROM only, no active elevation. Phase 2 (6-12 weeks): active-assisted and active ROM. Phase 3 (12+ weeks): progressive strengthening. OT also addresses pain management, ADL modification during healing (long-handled tools, dressing sticks), and ergonomic modification to prevent re-injury.",
+    "topic": "rotator_cuff",
+    "concept": "rotator_cuff.muscles",
+    "is_answer_chunk": false,
+    "chunk_type": "context"
+  },
+  {
+    "id": "rc_muscles_figure",
+    "text": "Figure: Rotator cuff anatomy — posterior view shows supraspinatus (superior, inserts on superior facet of greater tubercle), infraspinatus (middle facet of greater tubercle), and teres minor (inferior facet of greater tubercle). Anterior view shows subscapularis inserting on lesser tubercle. All four muscles originate from different fossae of the scapula. The supraspinatus tendon passes beneath the coracoacromial arch — impingement occurs here when the arch space narrows with overhead activities.",
+    "topic": "rotator_cuff",
+    "concept": "rotator_cuff.muscles",
+    "is_answer_chunk": false,
+    "chunk_type": "figure"
+  },
+  {
     "id": "rc_supraspinatus_ans",
-    "text": "The supraspinatus originates from the supraspinous fossa of the scapula and inserts on the superior facet of the greater tubercle of the humerus. It initiates shoulder abduction for the first 15° before the deltoid takes over. It is innervated by the suprascapular nerve (C5-C6). The supraspinatus is tested clinically with the empty-can test (arm at 90° abduction, 30° horizontal adduction, internally rotated). It is the most commonly torn rotator cuff muscle.",
+    "text": "The supraspinatus (suprascapular nerve, C5-C6) originates from the supraspinous fossa of the scapula and inserts on the superior facet of the greater tubercle of the humerus. Primary action: initiates shoulder abduction for the first 15°; also assists deltoid through the full arc by stabilizing the humeral head. Most commonly torn rotator cuff muscle. Clinical tests: (1) Empty-can test (Jobe's) — arm at 90° abduction, 30° forward flexion, thumb pointing down (full internal rotation); downward pressure applied; pain or weakness = positive. (2) Drop-arm test — inability to slowly lower arm from 90° = massive supraspinatus tear. (3) Painful arc sign — pain between 60-120° abduction suggests supraspinatus impingement.",
     "topic": "rotator_cuff",
     "concept": "rotator_cuff.supraspinatus",
     "is_answer_chunk": true,
     "chunk_type": "answer"
   },
   {
+    "id": "rc_supraspinatus_clinical",
+    "text": "OT assessment and intervention for supraspinatus pathology: Test supraspinatus strength with empty-can test, assess painful arc (60-120°), and check for deltoid atrophy suggesting chronic denervation. Functional impact: inability to initiate shoulder abduction impairs reaching for cupboards, donning overhead garments, bathing, and work tasks requiring arm elevation. OT interventions for impingement: posture correction, scapular stabilization exercises, activity modification to avoid painful arc positions, ergonomic adjustment (lower shelf height), modalities for pain management. Post-repair: strictly follow phase-based protocol to protect surgical repair.",
+    "topic": "rotator_cuff",
+    "concept": "rotator_cuff.supraspinatus",
+    "is_answer_chunk": false,
+    "chunk_type": "context"
+  },
+  {
     "id": "rc_infraspinatus_ans",
-    "text": "The infraspinatus originates from the infraspinous fossa of the scapula and inserts on the middle facet of the greater tubercle of the humerus. Its primary action is external rotation of the shoulder; it also assists with horizontal abduction. Innervation: suprascapular nerve (C5-C6). Clinical test: resist external rotation with elbow at 90° (external rotation lag sign for full-thickness tears).",
+    "text": "The infraspinatus (suprascapular nerve, C5-C6) originates from the infraspinous fossa and inserts on the middle facet of the greater tubercle of the humerus. Primary action: external rotation of the shoulder (the main external rotator along with teres minor); also assists horizontal abduction. Clinical tests: (1) External rotation lag sign — patient unable to maintain passive external rotation when examiner releases the arm (positive for full-thickness infraspinatus tear). (2) Hornblower's sign — inability to externally rotate with shoulder at 90° abduction (positive indicates teres minor involvement as well). (3) Resisted external rotation with elbow at side — weakness suggests infraspinatus injury.",
     "topic": "rotator_cuff",
     "concept": "rotator_cuff.infraspinatus",
     "is_answer_chunk": true,
     "chunk_type": "answer"
   },
   {
+    "id": "rc_infraspinatus_clinical",
+    "text": "OT functional implications of infraspinatus weakness: External rotation is required for many ADLs — reaching to the back of one's head (hair combing), tucking in a shirt behind the back, and throwing. Loss of external rotation causes compensatory movements (trunk rotation) that can cause secondary injuries. OT intervention: external rotation strengthening with resistance band (elbow at 90°, arm at side); avoid excessive internal rotation positioning; in post-surgical cases, external rotation may be restricted 0-30° for the first 6 weeks following massive posterosuperior cuff repair.",
+    "topic": "rotator_cuff",
+    "concept": "rotator_cuff.infraspinatus",
+    "is_answer_chunk": false,
+    "chunk_type": "context"
+  },
+  {
+    "id": "rc_teres_minor_ans",
+    "text": "The teres minor (axillary nerve, C5-C6) originates from the lateral border of the scapula and inserts on the inferior facet of the greater tubercle of the humerus. It is the only rotator cuff muscle innervated by the axillary nerve (not the suprascapular nerve). Primary actions: external rotation and weak adduction of the shoulder. It works in concert with the infraspinatus as an external rotator. Isolated teres minor weakness is rare; it is usually involved in posterior cuff tears alongside infraspinatus. Hornblower's sign (inability to externally rotate at 90° abduction) suggests combined infraspinatus + teres minor tear.",
+    "topic": "rotator_cuff",
+    "concept": "rotator_cuff.teres_minor",
+    "is_answer_chunk": true,
+    "chunk_type": "answer"
+  },
+  {
+    "id": "rc_teres_minor_clinical",
+    "text": "Teres minor distinguishing feature for NBCOT: Unlike the other three rotator cuff muscles (supraspinatus, infraspinatus, subscapularis — all suprascapular or subscapular nerve), teres minor is innervated by the axillary nerve. This means axillary nerve injury can weaken BOTH deltoid abduction AND teres minor external rotation simultaneously. Clinically, this combination (weak abduction + weak external rotation) with preserved elbow/hand function strongly suggests axillary nerve injury rather than an isolated rotator cuff tear.",
+    "topic": "rotator_cuff",
+    "concept": "rotator_cuff.teres_minor",
+    "is_answer_chunk": false,
+    "chunk_type": "context"
+  },
+  {
     "id": "rc_subscapularis_ans",
-    "text": "The subscapularis originates from the subscapular fossa (anterior surface of scapula) and inserts on the lesser tubercle of the humerus. It is the only rotator cuff muscle on the anterior surface of the scapula. Primary actions: internal rotation and adduction of the shoulder. Innervation: upper and lower subscapular nerves (C5-C6), branches of the posterior cord. Clinical test: lift-off test (arm internally rotated behind back, lift away from body).",
+    "text": "The subscapularis (upper and lower subscapular nerves, C5-C6, from posterior cord) originates from the subscapular fossa — the entire anterior (costal) surface of the scapula — and inserts on the lesser tubercle of the humerus. It is the largest and strongest rotator cuff muscle. Primary actions: internal rotation (primary) and adduction of the shoulder. It is the only rotator cuff muscle on the anterior surface and is the only one that internally rotates. Clinical tests: (1) Lift-off test — with dorsum of hand placed against lower back, patient lifts hand away from back against resistance; inability = positive for subscapularis tear. (2) Belly-press test — patient presses palm flat against abdomen; if elbow drops behind body plane = positive. (3) Bear hug test — for anterior subscapularis tears.",
     "topic": "rotator_cuff",
     "concept": "rotator_cuff.subscapularis",
     "is_answer_chunk": true,
     "chunk_type": "answer"
+  },
+  {
+    "id": "rc_subscapularis_clinical",
+    "text": "OT assessment and clinical significance of subscapularis: Subscapularis is crucial for functional internal rotation used in reaching into a back pocket, fastening a bra, and tucking in a shirt. Post-surgical subscapularis repair has one of the strictest protocols: external rotation is limited to 0-30° for 6-8 weeks to protect the repair. OT must instruct patients to avoid reaching behind the back and across the body during healing. Lift-off test and belly-press test are the gold-standard clinical assessments for subscapularis integrity and should be performed in every shoulder OT evaluation.",
+    "topic": "rotator_cuff",
+    "concept": "rotator_cuff.subscapularis",
+    "is_answer_chunk": false,
+    "chunk_type": "context"
   }
 ]
