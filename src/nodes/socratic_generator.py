@@ -45,8 +45,11 @@ class SocraticOutput(BaseModel):
 
 _RAPPORT_SYSTEM = """\
 You are UnMask, a friendly Socratic tutor helping OT students prepare for the NBCOT exam.
-Keep this brief: 1-2 sentences of warm rapport, then ask which anatomy topic they'd like to work on.
-End with a question mark."""
+You are currently running a short diagnostic to calibrate the student's starting level.
+The diagnostic questions are provided externally — do NOT ask your own questions.
+React naturally to the student's answer in 1-2 sentences: acknowledge if correct/incorrect
+(without giving the full answer away), offer brief encouragement, and then stop.
+Do not repeat previous encouragement phrases you have already used."""
 
 _TUTORING_SYSTEM = """\
 You are UnMask, a Socratic tutor for OT anatomy/neuroscience (NBCOT prep).
@@ -113,15 +116,16 @@ def _use_local(phase: Phase) -> bool:
     return phase in _cfg["llm"].get("use_local_for", [])
 
 
-def _call_ollama(system: str, user: str) -> str:
+def _call_ollama(system: str, user: str, history: list[dict] | None = None) -> str:
     """Call local Ollama as a plain text fallback (no structured output)."""
     import subprocess, json
+    messages = [{"role": "system", "content": system}]
+    if history:
+        messages.extend(history[-6:])
+    messages.append({"role": "user", "content": user})
     payload = {
         "model": _cfg["llm"]["local_model"],
-        "messages": [
-            {"role": "system", "content": system},
-            {"role": "user", "content": user},
-        ],
+        "messages": messages,
         "stream": False,
     }
     result = subprocess.run(
@@ -157,46 +161,47 @@ def socratic_generator(state: TutoringState) -> dict:
         f"{m['role'].capitalize()}: {m['content']}" for m in history[-6:]
     ) or "(Session start)"
 
-    # ── Rapport / Wrapup: plain LLM (local or API) ─────────────────────────
-    if phase == "rapport":
-        system = _RAPPORT_SYSTEM
-        user = state["student_message"] or "Hello"
-        if _use_local(phase):
-            try:
-                text = _call_ollama(system, user)
-                return {
-                    "generated_response": text,
-                    "_internal_analysis": None,
-                    "conversation_history": [
-                        {"role": "user", "content": user},
-                        {"role": "assistant", "content": text},
-                    ],
-                    "turn_count": turn + 1,
-                }
-            except Exception:
-                pass  # fallback to API below
+    # ── Rapport / Wrapup: plain LLM (no structured schema) ─────────────────
+    if phase in ("rapport", "wrapup"):
+        if phase == "rapport":
+            system = _RAPPORT_SYSTEM
+            user = state["student_message"] or "Hello"
+        else:
+            import json
+            system = _WRAPUP_SYSTEM.format(
+                weak_topics=", ".join(state.get("weak_topics", [])) or "none",
+                mastery_json=json.dumps(mastery, indent=2),
+            )
+            user = "Please give me a session summary."
 
-    if phase == "wrapup":
-        import json
-        system = _WRAPUP_SYSTEM.format(
-            weak_topics=", ".join(state.get("weak_topics", [])) or "none",
-            mastery_json=json.dumps(mastery, indent=2),
-        )
-        user = "Please give me a session summary."
+        # Try local first; fall back to API — both use plain completions, no schema
+        text = None
         if _use_local(phase):
             try:
-                text = _call_ollama(system, user)
-                return {
-                    "generated_response": text,
-                    "_internal_analysis": None,
-                    "conversation_history": [
-                        {"role": "user", "content": state["student_message"]},
-                        {"role": "assistant", "content": text},
-                    ],
-                    "turn_count": turn + 1,
-                }
+                text = _call_ollama(system, user, history=history)
             except Exception:
                 pass
+
+        if text is None:
+            client = _get_client()
+            api_messages = [{"role": "system", "content": system}, *history[-6:], {"role": "user", "content": user}]
+            resp = client.chat.completions.create(
+                model=os.getenv("OPENAI_MODEL", _cfg["llm"]["model"]),
+                messages=api_messages,
+                max_tokens=120,
+                temperature=0.7,
+            )
+            text = resp.choices[0].message.content.strip()
+
+        return {
+            "generated_response": text,
+            "_internal_analysis": None,
+            "conversation_history": [
+                {"role": "user", "content": user},
+                {"role": "assistant", "content": text},
+            ],
+            "turn_count": turn + 1,
+        }
 
     # ── Tutoring / Assessment: structured output via OpenAI ────────────────
     if phase == "tutoring":

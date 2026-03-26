@@ -53,6 +53,10 @@ async def on_message(message: cl.Message):
     # Update elapsed time
     state["elapsed_seconds"] = time.time() - start_time
     state["student_message"] = message.content
+    # IMPORTANT: Never re-pass accumulated conversation_history to graph.invoke.
+    # TutoringState.conversation_history uses operator.add, so passing the full
+    # history again would double it on every turn (checkpointer already holds it).
+    state["conversation_history"] = []
 
     # Run LangGraph
     config = {"configurable": {"thread_id": state["session_id"]}}

@@ -33,3 +33,11 @@ env/
 .idea/
 .vscode/
 *.swp
+
+# LaTeX build artifacts
+*.aux
+*.log
+*.out
+
+# Assignment PDF (not our work)
+NLP\ and\ Text\ Mining\ Final\ 2026.pdf

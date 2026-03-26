@@ -1,0 +1,128 @@
+\documentclass[11pt]{article}
+\usepackage[hyperref]{acl}
+\usepackage{times}
+\usepackage{latexsym}
+\usepackage{microtype}
+
+\title{UnMask: Supplementary Material\\
+\large Conversation Transcripts (Appendix A)}
+
+\author{Sanika Vilas Najan \quad Vaishak Girish Kumar \\
+  University at Buffalo \\
+  CSE 635: NLP and Text Mining --- Spring 2026}
+
+\begin{document}
+\maketitle
+
+\section*{Appendix A: Conversation Transcripts}
+\label{app:transcripts}
+
+The P3 specification requires 5 conversation transcripts demonstrating no
+answer leak before the 3rd turn.
+All transcripts were generated live from UnMask with cold-start mastery = 0.20
+(PCR \texttt{context\_only} mode).
+Gold answers are shown for grader reference only---they were present in
+\texttt{InternalAnalysis} (hidden) and absent from \texttt{VisibleResponse}
+(shown to student).
+Leak status verified by both layers of the answer-leak detector.
+
+\subsection*{Transcript 1 --- Brachial Plexus Origins}
+
+\noindent\textbf{Turn 1} $|$ PCR: \texttt{context\_only} $|$ Leak: None $|$ Ends `?': Yes\\
+\textit{Student:} What spinal cord levels form the brachial plexus?\\
+\textit{UnMask:} Great question! Let's explore the spinal levels involved.
+Which specific cervical and thoracic spinal nerves contribute to the formation
+of the brachial plexus, and how do they relate to the vertebrae they emerge
+from?\\
+{\small\textit{[Gold held internally: ``C5--T1 anterior rami'']}}
+
+\noindent\textbf{Turn 2} $|$ PCR: \texttt{context\_only} $|$ Leak: None $|$ Ends `?': Yes\\
+\textit{Student:} Is it only cervical nerves?\\
+\textit{UnMask:} You're on the right track! Have you considered whether any
+thoracic spinal nerves might also contribute to the brachial plexus, in
+addition to the cervical nerves?\\
+{\small\textit{[Gold held internally: ``Lower 4 cervical (C5--C8) and first thoracic (T1)'']}}
+
+\noindent\textbf{Turn 3} $|$ PCR: \texttt{prerequisite\_first} $|$ Leak: None $|$ Ends `?': Yes\\
+\textit{Student:} So five roots total from C5 to T1?\\
+\textit{UnMask:} You're doing well in identifying the spinal roots involved!
+How do these spinal nerve roots organize themselves into the trunks and
+divisions of the brachial plexus?\\
+{\small\textit{[Gold confirmed: ``Yes---C5, C6, C7, C8, T1'']}}
+
+\subsection*{Transcript 2 --- Axillary Nerve \& Shoulder Dislocation}
+
+\noindent\textbf{Turn 1} $|$ PCR: \texttt{context\_only} $|$ Leak: None $|$ Ends `?': Yes\\
+\textit{Student:} Which nerve is damaged when a patient can't abduct past 15 degrees after shoulder dislocation?\\
+\textit{UnMask:} What is the primary muscle responsible for shoulder abduction beyond 15 degrees, and which nerve innervates this muscle?\\
+{\small\textit{[Gold held: ``Axillary nerve'']}}
+
+\noindent\textbf{Turn 2} $|$ PCR: \texttt{context\_only} $|$ Leak: None $|$ Ends `?': Yes\\
+\textit{Student:} So is it the axillary nerve?\\
+\textit{UnMask:} You're on the right track! What is the primary muscle responsible for shoulder abduction beyond 15 degrees, and which nerve innervates this muscle?\\
+{\small\textit{[Gold held: ``Axillary nerve innervates deltoid, crucial for abduction beyond 15°'']}}
+
+\noindent\textbf{Turn 3} $|$ PCR: \texttt{prerequisite\_first} $|$ Leak: None $|$ Ends `?': Yes\\
+\textit{Student:} What else does the axillary nerve innervate besides deltoid?\\
+\textit{UnMask:} Besides the deltoid, which other muscle and what specific area of skin does the axillary nerve innervate?\\
+{\small\textit{[Gold confirmed: ``Teres minor + lateral shoulder skin (regimental badge area)'']}}
+
+\subsection*{Transcript 3 --- Radial Nerve \& Wrist Drop}
+
+\noindent\textbf{Turn 1} $|$ PCR: \texttt{context\_only} $|$ Leak: None $|$ Ends `?': Yes\\
+\textit{Student:} A patient has wrist drop after a mid-shaft humerus fracture. What nerve is likely injured?\\
+\textit{UnMask:} What is the relationship between the location of a mid-shaft humerus fracture and the nerve that runs in that area, particularly in relation to wrist extensor function?\\
+{\small\textit{[Gold held: ``Radial nerve'']}}
+
+\noindent\textbf{Turn 2} $|$ PCR: \texttt{context\_only} $|$ Leak: None $|$ Ends `?': Yes\\
+\textit{Student:} Does the radial nerve innervate all wrist extensors?\\
+\textit{UnMask:} What is the role of the radial nerve in the forearm, and how does it relate to the muscles responsible for wrist extension?\\
+{\small\textit{[Gold held: ``Radial nerve innervates all wrist extensor muscles'']}}
+
+\noindent\textbf{Turn 3} $|$ PCR: \texttt{prerequisite\_first} $|$ Leak: None $|$ Ends `?': Yes\\
+\textit{Student:} What about sensation---where would the patient feel numbness?\\
+\textit{UnMask:} Which specific area on the dorsal side of the hand and forearm would you expect to experience numbness if the radial nerve is injured?\\
+{\small\textit{[Gold confirmed: ``Posterior forearm and dorsal hand; first dorsal web space'']}}
+
+\subsection*{Transcript 4 --- Rotator Cuff Anatomy}
+
+\noindent\textbf{Turn 1} $|$ PCR: \texttt{context\_only} $|$ Leak: None $|$ Ends `?': Yes\\
+\textit{Student:} Name the four rotator cuff muscles.\\
+\textit{UnMask:} What acronym can help you remember the names of the four muscles that form the rotator cuff, and what does each letter stand for?\\
+{\small\textit{[Gold held: ``Supraspinatus, infraspinatus, teres minor, subscapularis (SITS)'']}}
+
+\noindent\textbf{Turn 2} $|$ PCR: \texttt{context\_only} $|$ Leak: None $|$ Ends `?': Yes\\
+\textit{Student:} I know supraspinatus---what about the others on the posterior scapula?\\
+\textit{UnMask:} What are the names of the rotator cuff muscles that originate from the infraspinous fossa and the teres minor region on the posterior scapula?\\
+{\small\textit{[Gold held: ``Infraspinatus and teres minor'']}}
+
+\noindent\textbf{Turn 3} $|$ PCR: \texttt{prerequisite\_first} $|$ Leak: None $|$ Ends `?': Yes\\
+\textit{Student:} What movement does the infraspinatus produce?\\
+\textit{UnMask:} Considering the infraspinatus is located behind the glenohumeral joint, how might its position influence the type of rotation it facilitates at the shoulder?\\
+{\small\textit{[Gold confirmed: ``External rotation of the shoulder'']}}
+
+\subsection*{Transcript 5 --- Median Nerve \& Carpal Tunnel Syndrome}
+
+\noindent\textbf{Turn 1} $|$ PCR: \texttt{context\_only} $|$ Leak: None $|$ Ends `?': Yes\\
+\textit{Student:} What nerve is compressed in carpal tunnel syndrome?\\
+\textit{UnMask:} Which nerve passes through the carpal tunnel along with the flexor tendons and is responsible for sensation in the thumb, index, middle, and part of the ring finger?\\
+{\small\textit{[Gold held: ``Median nerve'']}}
+
+\noindent\textbf{Turn 2} $|$ PCR: \texttt{context\_only} $|$ Leak: None $|$ Ends `?': Yes\\
+\textit{Student:} What symptoms would the patient have?\\
+\textit{UnMask:} When the median nerve is compressed at the wrist, what changes might you expect in both sensation and muscle function in the hand?\\
+{\small\textit{[Gold held: ``Numbness/tingling digits 1--3.5; thenar weakness'']}}
+
+\noindent\textbf{Turn 3} $|$ PCR: \texttt{prerequisite\_first} $|$ Leak: None $|$ Ends `?': Yes\\
+\textit{Student:} Would the patient have weakness gripping or just sensory loss?\\
+\textit{UnMask:} What role do the thenar muscles, innervated by the median nerve, play in gripping, and how might their dysfunction affect hand strength?\\
+{\small\textit{[Gold confirmed: ``Both---thenar weakness impairs pinch/grip; sensory loss in lateral digits'']}}
+
+\bigskip
+\noindent\textbf{Transcript summary:} 15 turns, 5 transcripts, 0 confirmed leaks,
+0 soft flags, 15/15 ends with ``?''.
+Gold answer present only in \texttt{InternalAnalysis} (stripped before
+rendering); absent from retrieved Qdrant chunks due to PCR \texttt{must\_not}
+filter.
+
+\end{document}
