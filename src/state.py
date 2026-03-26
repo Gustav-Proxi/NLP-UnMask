@@ -53,3 +53,12 @@ class TutoringState(TypedDict):
 
     # Weak topics for proactive revisit (set by pedagogy_agent)
     weak_topics: list[str]
+
+    # Structured mistake log — append-only record of incorrect responses
+    # Each entry: {topic, misconception, turn, elapsed_sec}
+    mistake_log: Annotated[list[dict], operator.add]
+
+    # Revisit control — set by orchestrator, consumed by generator then cleared
+    revisit_scheduled: bool
+    revisit_topic: Optional[str]
+    _last_revisit_sec: float   # elapsed_sec when last revisit was triggered

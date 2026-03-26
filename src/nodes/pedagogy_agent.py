@@ -238,12 +238,26 @@ def pedagogy_agent(state: TutoringState) -> dict:
     if consecutive_incorrect >= _cfg["mastery"]["consecutive_incorrect_for_hint"] and topic:
         prereq_gaps = _find_prerequisite_gaps(topic, mastery, G)
 
+    # Append to mistake log when student answers incorrectly
+    new_mistakes = []
+    if not is_correct and topic:
+        misconception = (internal or {}).get("student_misconception", "")
+        new_mistakes = [{
+            "topic": topic,
+            "misconception": misconception,
+            "turn": turn,
+            "elapsed_sec": round(state.get("elapsed_seconds", 0.0), 1),
+        }]
+
     return {
         "mastery_scores": mastery,
         "consecutive_correct": consecutive_correct,
         "consecutive_incorrect": consecutive_incorrect,
         "coverage_ratio": coverage,
         "weak_topics": weak + prereq_gaps,
+        "mistake_log": new_mistakes,   # Annotated[list, operator.add] — appends
+        # Clear revisit_scheduled after one use so it doesn't loop indefinitely
+        "revisit_scheduled": False,
     }
 
 

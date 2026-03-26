@@ -32,6 +32,8 @@ session:
   wrapup_cutoff_sec: 840      # 14 min
   max_session_sec: 900        # 15 min hard ceiling
   diagnostic_questions: 4     # questions during rapport to init mastery
+  revisit_after_sec: 480      # 8 min — proactively revisit weakest topic after this point
+  revisit_cooldown_sec: 180   # minimum gap between successive revisit triggers
 
 mastery:
   default_prior: 0.2          # P(L0) cold start

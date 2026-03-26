@@ -77,4 +77,8 @@ def make_initial_state(session_id: str | None = None) -> TutoringState:
         hints_used=0,
         coverage_ratio=0.0,
         weak_topics=[],
+        mistake_log=[],
+        revisit_scheduled=False,
+        revisit_topic=None,
+        _last_revisit_sec=0.0,
     )

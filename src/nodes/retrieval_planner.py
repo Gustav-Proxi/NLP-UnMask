@@ -222,6 +222,14 @@ def retrieval_planner(state: TutoringState) -> dict:
     """
     query = state["student_message"]
     topic = state.get("current_topic") or ""
+
+    # When a proactive revisit is scheduled, augment the query with the
+    # topic name so retrieval targets the right concept regardless of what
+    # the student just typed.
+    if state.get("revisit_scheduled") and state.get("revisit_topic"):
+        topic_readable = state["revisit_topic"].replace("_", " ").replace(".", " ")
+        query = f"{query} {topic_readable}" if query.strip() else topic_readable
+
     mastery = state["mastery_scores"].get(topic, _cfg["mastery"]["default_prior"])
     mode = _get_retrieval_mode(mastery)
 

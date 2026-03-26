@@ -70,7 +70,7 @@ RETRIEVAL MODE: {mode} (answer chunks {"NOT " if mode != "full_reveal" else ""}p
 CONVERSATION SO FAR: {history}
 CURRENT TURN: {turn}
 CONSECUTIVE INCORRECT: {consecutive_incorrect}
-"""
+{revisit_block}"""
 
 _ASSESSMENT_SYSTEM = """\
 You are UnMask in assessment mode.
@@ -205,6 +205,28 @@ def socratic_generator(state: TutoringState) -> dict:
 
     # ── Tutoring / Assessment: structured output via OpenAI ────────────────
     if phase == "tutoring":
+        # Build revisit block when orchestrator has scheduled a proactive revisit
+        revisit_block = ""
+        if state.get("revisit_scheduled") and state.get("revisit_topic"):
+            rt = state["revisit_topic"]
+            rt_readable = rt.replace("_", " ").replace(".", " ")
+            # Pull misconception from the most recent mistake on this topic
+            prior_misconception = next(
+                (m["misconception"] for m in reversed(state.get("mistake_log", []))
+                 if m["topic"] == rt and m["misconception"]),
+                None,
+            )
+            misconception_hint = (
+                f" The student previously showed this misconception: \"{prior_misconception}\"."
+                if prior_misconception else ""
+            )
+            revisit_block = (
+                f"\nREVISIT MODE: The student previously struggled with '{rt_readable}'."
+                f"{misconception_hint}"
+                f" Naturally transition the conversation back to this topic with a"
+                f" Socratic question that probes the same concept from a fresh angle."
+            )
+
         system = _TUTORING_SYSTEM.format(
             context=context_text,
             mastery=mastery.get(topic, _cfg["mastery"]["default_prior"]),
@@ -212,6 +234,7 @@ def socratic_generator(state: TutoringState) -> dict:
             history=recent_history,
             turn=turn,
             consecutive_incorrect=state.get("consecutive_incorrect", 0),
+            revisit_block=revisit_block,
         )
     elif phase == "assessment":
         import json
