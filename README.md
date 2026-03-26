@@ -2,87 +2,125 @@
 
 **CSE 635: NLP and Text Mining · University at Buffalo · Spring 2026**
 
-A multimodal AI tutor for Occupational Therapy students preparing for the **NBCOT certification exam**. UnMask never gives direct answers — it guides students toward discovering answers themselves through Socratic questioning.
+A multimodal AI tutor for Occupational Therapy students preparing for the **NBCOT certification exam**. UnMask never gives direct answers — it guides students toward discovering answers themselves through Socratic questioning, enforced architecturally at the retrieval layer.
 
 *Built by Sanika Vilas Najan & Vaishak Girish Kumar*
 
 ---
 
-## Core Idea
+## Core Novelty: Progressive Context Revelation (PCR)
 
-Instead of telling the student the answer, UnMask:
+Every existing Socratic AI tutor (Khanmigo, SocraticLM, TutorRL, KELE) retrieves the answer first and relies on prompting to suppress it. Sufficiently capable models bypass this. **UnMask never retrieves the answer until the student demonstrates prerequisite mastery** — a 10-line metadata filter in Qdrant that makes answer leakage architecturally impossible.
 
-1. Retrieves the correct answer from OpenStax Anatomy & Physiology 2e
-2. Hides it in a masked `internal_analysis` field (structurally absent from the student's view)
-3. Asks a Socratic question calibrated to guide the student toward discovering it
+Every chunk in Qdrant carries `is_answer_chunk: true/false`. The Retrieval Planner applies a mastery-gated filter:
 
-This is **Progressive Context Revelation (PCR)** — the system's core novelty. Answer chunks in Qdrant are gated by student mastery score:
-
-| Mastery | PCR Mode | What the LLM sees |
-|---------|----------|-------------------|
-| < 0.4 | `context_only` | Background context only — no answer chunks |
-| 0.4–0.7 | `prerequisite_first` | Prerequisite and context chunks |
+| Mastery | PCR Mode | LLM sees |
+|---------|----------|-----------|
+| < 0.4 | `context_only` | Background context — no answer chunks |
+| 0.4–0.7 | `prerequisite_first` | Hints, structure, definition scaffolds |
 | > 0.7 | `full_reveal` | All chunks including answer |
 
-Knowledge masking is enforced architecturally via structured output — not just prompt instructions:
+Thresholds are calibrated via a sweep over `{0.3, 0.4, 0.5} × {0.5, 0.6, 0.7, 0.8}` on the 50-QA eval set. Structured output enforces Socratic form at the generation layer as a second gate:
 
 ```python
 class SocraticOutput(BaseModel):
     internal_analysis: InternalAnalysis  # stripped before display
-    visible_response: VisibleResponse    # only this is shown to student
+    visible_response: VisibleResponse    # must end with "?"
 ```
 
 ---
 
-## Architecture
+## Architecture (4 Layers)
 
 ```
 Student Input (Chainlit UI)
         │
         ▼
-  LangGraph State Machine
-  ├── Orchestrator        (pure Python, zero LLM calls)
+  LangGraph State Machine (5 nodes)
+  ├── Pedagogy Agent      (BKT mastery update + concept DAG + phase transitions)
   ├── Retrieval Planner   (PCR filter + hybrid RAG + CRAG)
   ├── Socratic Generator  (structured output masking)
-  └── Pedagogy Agent      (BKT mastery update + concept DAG)
+  ├── Assessment Agent    (clinical scenario + reasoning eval vs. textbook)
+  └── Memory Manager      (concept graph update from student responses)
         │
-  LLM: GPT-4o via OpenRouter
-  Embeddings: Gemini Embedding 2 (3072d)
-  Vector DB: Qdrant (local file mode)
+  LLM Routing (two-tier):
+    Llama 3.1 8B (local, Ollama) — rapport + wrapup (65–75%)
+    GPT-4o via OpenRouter         — Socratic + VLM + assessment (25–35%)
+  Embeddings: Gemini Embedding 2 (3072d, dense) + BM25 (sparse)
+  Vector DB:  Qdrant (local file mode, unified text + image collection)
+  NLI Gate:   DeBERTa cross-encoder (pre-delivery faithfulness enforcement)
 ```
 
-**Session phases (~15 min):**
+### Session Phases (~15 min)
 
-| Phase | Duration | What happens |
-|-------|----------|--------------|
-| Warm-up | 0–2 min | 4 diagnostic questions to calibrate starting mastery |
-| Tutoring | 2–12 min | Socratic loop — questions, hints, concept graph tracing |
-| Assessment | 12–14 min | Clinical scenario — student explains reasoning |
-| Wrap-up | 14–15 min | Mastery summary + weak topics flagged |
+| Phase | Duration | Trigger | What happens |
+|-------|----------|---------|--------------|
+| Rapport | 0–2 min | start | 4 diagnostic questions to init concept graph mastery |
+| Tutoring | 2–12 min | `diagnostic_complete=true` | Socratic loop — PCR-gated retrieval, CRAG grounding |
+| Assessment | 12–14 min | `coverage ≥ 80%` or `t ≥ 720s` | Clinical scenario — student explains free-text reasoning |
+| Wrap-up | 14–15 min | `t ≥ 840s` | Mastery summary + weak topics flagged |
 
-**RAG pipeline:**
-- Hybrid retrieval: Gemini Embedding 2 (dense) + BM25 (sparse), merged via RRF, top-5 results
-- Corrective RAG (CRAG): grades retrieved docs → reformulates query on failure (max 2 retries)
-- Bayesian Knowledge Tracing (BKT) per concept node; `P(mastery) < 0.6` flags weak-topic revisit
+### RAG Pipeline (Layer 3: Corrective RAG)
+
+1. **RETRIEVE** — Hybrid search (Gemini dense + BM25 sparse, merged by RRF), top-5 results, PCR filter applied
+2. **GRADE** — LLM scores each chunk for relevance; all-fail triggers re-query
+3. **RE-QUERY** — Synonym expansion or sub-question decomposition (max 2 retries)
+4. **VERIFY** — DeBERTa cross-encoder checks NLI entailment of every claim against retrieved chunks; unfaithful responses are blocked and regenerated (pre-delivery gate, not post-hoc)
+
+### Concept Prerequisite Graph (Layer 4)
+
+NetworkX DAG of anatomy concepts with prerequisite edges. BKT updates per node per student response. Cold-start solved in v4: diagnostic probe initializes mastery within the first 2 minutes (`correct → 0.5`, `incorrect → 0.1`, `skipped → 0.2`). After 8 min, Pedagogy Agent identifies weakest nodes (`mastery < 0.4`) and schedules revisit before assessment.
 
 ---
 
-## Topics Covered (MVP)
+## Knowledge Base
 
-- Brachial plexus (origin → trunks → cords → terminal branches)
-- Peripheral nerves: axillary, radial, median, ulnar
-- Rotator cuff muscles (SITS)
+### Textual Data
+- **Source:** OpenStax Anatomy & Physiology 2e (open access)
+- **Storage:** Qdrant collection `unmask_anatomy`; each chunk tagged with `chunk_type` (`definition`, `hint`, `structure`, `answer`) and `is_answer_chunk: bool`
+
+### Visual Data
+- **Source:** AnatomyTOOL and MedPix (open-access labeled anatomy diagrams)
+- **Volume:** ~50 diagrams curated with anatomical labels; 10 held out as blind test set
+- **Metadata schema per image:**
+```json
+{
+  "image_id": "brachial_plexus_01",
+  "source": "AnatomyTOOL",
+  "structures": ["C5", "C6", "upper trunk", "axillary nerve"],
+  "is_answer_chunk": false,
+  "chunk_type": "structure",
+  "mastery_required": 0.4
+}
+```
+- VLM annotations cached in this format after first call (~80% fewer API calls)
+
+### Multimodal VLM
+MedGemma 4B (local via UB CCR, primary) + GPT-4o (fallback). After structure identification, Socratic Generator asks about function or insertion point — PCR applies to image-associated chunks identically to text.
+
+---
+
+## Generalizability
+
+Swap domain with a single config change — zero code changes:
+
+```yaml
+# config.yaml
+qdrant:
+  collection: physics   # was: unmask_anatomy
+```
+
+The concept graph auto-generates from the OpenStax Physics 2e table of contents (same algorithm). Demonstrated with 10 physics QA pairs (Chapters 4–6).
 
 ---
 
 ## Setup
 
-**Requirements:** Python 3.11+, no Docker needed (Qdrant runs in local file mode)
+**Requirements:** Python 3.11+, Ollama (for local Llama), no Docker needed (Qdrant runs in local file mode)
 
 ```bash
 # 1. Install dependencies
 pip install -r requirements.txt
-pip install google-genai  # Gemini Embedding 2
 
 # 2. Configure environment
 cp .env.example .env
@@ -113,22 +151,44 @@ chainlit run app.py
 ## Evaluation
 
 ```bash
-python eval/run_eval.py              # full eval (30 questions + 20 adversarial)
+python eval/run_eval.py              # full eval (50 QA + 30 adversarial)
 python eval/run_eval.py --quick      # first 5 questions (smoke test)
 python eval/run_eval.py --skip-ragas # skip RAGAS for speed
+python eval/ablation.py              # 4-variant ablation study
 ```
 
-**Targets and results:**
+### Targets
 
-| Metric | Target | Result |
-|--------|--------|--------|
-| Retrieval Hit Rate @5 | ≥ 0.75 | **1.000** ✓ |
-| Answer Leak Rate | 0% | **0.000** ✓ |
-| Ends with `?` | ≥ 95% | **1.000** ✓ |
-| Avg Socratic Purity (1–5) | ≥ 4.0 | **4.93** ✓ |
-| Adversarial Resistance | ≥ 90% | **0.950** ✓ |
+| Metric | Target | Notes |
+|--------|--------|-------|
+| Socratic Purity (no leak by turn 3) | ≥ 95% | LLM-as-judge |
+| Answer Leak Rate (turns 1–2) | ≤ 5% | Dual-layer: keyword + semantic >0.92 |
+| RAGAS Faithfulness | ≥ 90% | Claims grounded in retrieved chunks |
+| RAGAS Answer Relevance | ≥ 85% | Addresses student's actual question |
+| Retrieval Precision@3 | ≥ 80% | Top-3 chunks relevant |
+| Multimodal Accuracy (blind diagrams) | ≥ 85% | 10 held-out anatomy diagrams |
+| Generalizability (Physics Socratic purity) | ≥ 75% | Same pipeline, swapped collection |
+| Latency (time-to-first-token) | ≤ 1.5s tutoring, ≤ 3s assessment | |
 
-Leak detection uses a dual-layer approach (keyword match + semantic similarity >0.92 must both fire) to eliminate false positives from Socratic questions that naturally reference topic vocabulary.
+### Ablation Study (4 Variants)
+
+| Variant | PCR | CRAG | NLI Gate |
+|---------|-----|------|----------|
+| Baseline (naive RAG + prompt suppression) | — | — | — |
+| PCR Only | ✓ | — | — |
+| PCR + CRAG | ✓ | ✓ | — |
+| Full System | ✓ | ✓ | ✓ |
+
+### Pilot Study
+10 UB students (5 OT/health sciences, 5 CS) — 15-min sessions. Pre/post 5-question quiz for learning gain. IRB exempt under 45 CFR 46.104(d)(1).
+
+---
+
+## Topics Covered
+
+- Brachial plexus (origin → trunks → cords → terminal branches)
+- Peripheral nerves: axillary, radial, median, ulnar
+- Rotator cuff muscles (SITS)
 
 ---
 
@@ -136,23 +196,23 @@ Leak detection uses a dual-layer approach (keyword match + semantic similarity >
 
 ```
 app.py                      # Chainlit entry point
-config.yaml                 # All tunable parameters
+config.yaml                 # All tunable parameters (PCR thresholds, session timing)
 src/
   graph.py                  # LangGraph state machine
   state.py                  # TutoringState TypedDict
   nodes/
-    orchestrator.py         # Phase transition logic (pure Python)
-    retrieval_planner.py    # PCR filter + hybrid RAG
+    orchestrator.py         # Phase transition logic (pure Python, zero LLM calls)
+    retrieval_planner.py    # PCR filter + hybrid RAG + CRAG loop
     socratic_generator.py   # Structured output masking
-    pedagogy_agent.py       # BKT + concept DAG
+    pedagogy_agent.py       # BKT + concept DAG + mastery update
   knowledge_base/
-    chunks.json             # 25 anatomy chunks with PCR metadata
-    concept_graph.json      # 16-node prerequisite DAG
+    chunks.json             # Anatomy chunks with PCR metadata
+    concept_graph.json      # Prerequisite DAG (NetworkX-serialized)
 scripts/
   index_kb.py               # Index chunks.json into Qdrant
 eval/
-  eval_dataset.json         # 30 QA triples
-  adversarial_prompts.json  # 20 adversarial prompts (5 types)
+  eval_dataset.json         # 50 QA triples
+  adversarial_prompts.json  # 30 adversarial prompts (5 types)
   run_eval.py               # Main evaluation runner
   ablation.py               # 4-variant ablation study
   metrics/
@@ -161,3 +221,38 @@ eval/
     retrieval_precision.py  # Hit rate + MRR
     ragas_eval.py           # RAGAS faithfulness + relevancy
 ```
+
+---
+
+## Cost
+
+| Component | Per session |
+|-----------|------------|
+| GPT-4o (OpenRouter) | ~$0.05–0.08 |
+| Llama 3.1 8B (local) | $0 |
+| Qdrant (local) | $0 |
+| DeBERTa (local, HuggingFace) | $0 |
+| **Total** | **~$0.08–0.10** |
+
+Total project budget: ~$6–10.
+
+---
+
+## Timeline
+
+| Week | Date | Milestone |
+|------|------|-----------|
+| 1 | Mar 25 | Data prep complete; Qdrant indexing done |
+| 2 | Apr 1 | LangGraph orchestration + Socratic Generator live |
+| 3 | Apr 8 | CRAG loop + NLI gate; ablation data collection |
+| 4 | Apr 15 | Threshold calibration; pilot study recruitment |
+| 5 | Apr 22 | Pilot study execution (live sessions) |
+| 6 | Apr 29 | Final metrics + paper draft |
+| 7 | May 6 | Final presentation + paper submission |
+
+---
+
+## Task Ownership
+
+- **Sanika:** PCR filter, Qdrant integration, diagnostic probe, image curation
+- **Vaishak:** LangGraph orchestration, Socratic Generator, evaluation framework, pilot study recruitment
