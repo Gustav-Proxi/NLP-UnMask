@@ -124,16 +124,16 @@ LLM routers for deterministic transitions.
 \begin{table}[h]
 \centering
 \small
-\begin{tabular}{@{}llll@{}}
+\begin{tabularx}{\columnwidth}{@{}l l X r@{}}
 \toprule
-\textbf{Phase} & \textbf{Entry} & \textbf{Exit} & \textbf{Window} \\
+\textbf{Phase} & \textbf{Entry} & \textbf{Exit trigger} & \textbf{Window} \\
 \midrule
-Rapport    & Session start      & 4 diagnostic Qs  & 0--120s  \\
-Tutoring   & diag.\ complete    & cov.$\geq$0.80 or $t\geq$720s & 120--720s \\
-Assessment & cov./time trigger  & $t\geq$840s      & 720--840s \\
-Wrapup     & $t\geq$840s        & Session end      & 840--900s \\
+Rapport    & Session start     & 4 diagnostic Qs answered       & 0--120s   \\
+Tutoring   & diag.\ complete   & cov.$\geq$0.80 or $t\geq$720s  & 120--720s \\
+Assessment & cov./time trigger & $t\geq$840s                    & 720--840s \\
+Wrapup     & $t\geq$840s       & Session end                    & 840--900s \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \caption{LangGraph session phases with entry/exit triggers and time ceilings.}
 \label{tab:phases}
 \end{table}
@@ -385,17 +385,20 @@ mode there is no answer chunk to leak.
 \begin{table}[h]
 \centering
 \small
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{@{}lcccc@{}}
 \toprule
-\textbf{Metric} & \texttt{full} & \texttt{no\_pcr} & \texttt{no\_crag} & \texttt{no\_graph} \\
+\textbf{Metric} & \textbf{full} & \textbf{no\_pcr} & \textbf{no\_crag} & \textbf{no\_graph} \\
 \midrule
 Ans.\ Chunk Reach$^\dagger$ & \textbf{0.000} & 1.000 & 0.000 & 0.000 \\
 Leak Rate  & 0.000 & 0.000 & 0.000 & 0.000 \\
-Avg Purity & \textbf{4.70} & 4.83 & 4.87 & 4.93 \\
+Avg Purity & \textbf{4.70}  & 4.83  & 4.87  & 4.93  \\
 Ends ``?'' & 1.000 & 1.000 & 1.000 & 1.000 \\
 \bottomrule
-\end{tabular}
-\caption{Ablation results (30 questions/variant, mastery = 0.20). $^\dagger$Answer Chunk Reach Rate = fraction of queries where the answer chunk enters LLM context. Full system = 0.000 is \emph{correct behavior}: PCR excludes answer chunks at cold-start mastery.}
+\end{tabular}}
+\caption{Ablation results (30 questions/variant, mastery=0.20).
+$^\dagger$Ans.\ Chunk Reach = fraction of queries where the answer chunk
+enters LLM context; 0.000 is \emph{correct} PCR behavior at cold-start mastery.}
 \label{tab:ablation}
 \end{table}
 
