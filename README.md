@@ -57,8 +57,13 @@ Student Input (Chainlit UI)
 |-------|----------|---------|--------------|
 | Rapport | 0–2 min | start | 4 diagnostic questions to init concept graph mastery |
 | Tutoring | 2–12 min | `diagnostic_complete=true` | Socratic loop — PCR-gated retrieval, CRAG grounding |
+| Revisit | ~8 min | weak topic + `elapsed ≥ 480s` | Orchestrator steers back to lowest-mastery topic |
 | Assessment | 12–14 min | `coverage ≥ 80%` or `t ≥ 720s` | Clinical scenario — student explains free-text reasoning |
-| Wrap-up | 14–15 min | `t ≥ 840s` | Mastery summary + weak topics flagged |
+| Wrap-up | 14–15 min | `t ≥ 840s` | Structured `SessionSummary`: per-topic report card, misconceptions, study tips |
+
+### Honest Encouragement
+
+The `encouragement` field in every tutoring response is calibrated to student performance. When `consecutive_incorrect > 0` the model is explicitly forbidden from saying "great job" or "well done" — it must acknowledge the difficulty directly. Controlled by `ENCOURAGEMENT RULES` in the tutoring system prompt and a `VisibleResponse.encouragement` field docstring constraint.
 
 ### RAG Pipeline (Layer 3: Corrective RAG)
 
@@ -83,30 +88,35 @@ At 8 min (`revisit_after_sec: 480`), the Orchestrator picks the weakest topic an
 
 ---
 
-## Knowledge Base
+## Knowledge Base and Datasets
 
-### Textual Data
-- **Source:** OpenStax Anatomy & Physiology 2e (open access)
-- **Storage:** Qdrant collection `unmask_anatomy`; each chunk tagged with `chunk_type` (`definition`, `hint`, `structure`, `answer`) and `is_answer_chunk: bool`
+### Textual Knowledge Base
 
-### Visual Data
-- **Source:** AnatomyTOOL and MedPix (open-access labeled anatomy diagrams)
-- **Volume:** ~50 diagrams curated with anatomical labels; 10 held out as blind test set
-- **Metadata schema per image:**
-```json
-{
-  "image_id": "brachial_plexus_01",
-  "source": "AnatomyTOOL",
-  "structures": ["C5", "C6", "upper trunk", "axillary nerve"],
-  "is_answer_chunk": false,
-  "chunk_type": "structure",
-  "mastery_required": 0.4
-}
+- **Source:** OpenStax Anatomy & Physiology 2e, Chapters 11 and 13–16 (open access)
+- **Storage:** Qdrant collection `unmask_anatomy` (local file mode, no Docker needed)
+- **Per-chunk metadata:** `is_answer_chunk: bool`, `chunk_type` (`context` / `prerequisite` / `answer` / `figure`), `concept` (concept ID)
+
+### Concept Prerequisite Graph (`src/knowledge_base/concept_graph.json`)
+
+16 concepts across 3 topic areas, forming a DAG:
 ```
-- VLM annotations cached in this format after first call (~80% fewer API calls)
+spinal_cord → brachial_plexus (origin→trunks→divisions→cords→terminal_branches)
+                              → peripheral_nerves (axillary, radial, median, ulnar)
+                                                  → rotator_cuff (muscles→SITS)
+```
+Used by the Pedagogy Agent (`nx.ancestors()`) to trace prerequisite gaps when a student struggles.
 
-### Multimodal VLM
-MedGemma 4B (local via UB CCR, primary) + GPT-4o (fallback). After structure identification, Socratic Generator asks about function or insertion point — PCR applies to image-associated chunks identically to text.
+### Evaluation Dataset (`eval/eval_dataset.json`)
+
+30 QA triples covering all 13 non-root concepts. Fields: `id`, `topic`, `concept`, `difficulty`, `question`, `expected_answer`, `answer_keywords`.
+
+### Adversarial Prompts (`eval/adversarial_prompts.json`)
+
+20 prompts across 5 attack types designed to elicit direct answers: `direct_request` (5), `jailbreak` (5), `social_engineering` (4), `off_topic` (4), `escalation` (2).
+
+### Visual Data (planned)
+- **Source:** AnatomyTOOL and MedPix (open-access labeled anatomy diagrams)
+- VLM backend (MedGemma 4B / GPT-4o Vision) not yet connected; Chainlit accepts image uploads
 
 ---
 
