@@ -141,7 +141,7 @@ def _find_prerequisite_gaps(topic: str, mastery: dict, G: nx.DiGraph) -> list[st
 # ── Diagnostic probe ──────────────────────────────────────────────────────────
 
 _DIAGNOSTIC_PROMPTS = [
-    "Quick warm-up: What spinal cord levels make up the brachial plexus?",
+    "What spinal cord levels make up the brachial plexus?",
     "Name the four rotator cuff muscles.",
     "Which nerve innervates the deltoid muscle?",
     "What is the function of the supraspinatus?",
@@ -197,11 +197,13 @@ def pedagogy_agent(state: TutoringState) -> dict:
 
     # ── Rapport: handle diagnostic probe ──────────────────────────────────
     if phase == "rapport":
-        diagnostic_q_idx = min(turn - 1, len(_DIAGNOSTIC_PROMPTS) - 1)
+        # turn 1 = warmup exchange (no anatomy answer), turn 2+ = diagnostic answers
+        # subtract 1 to offset for the warmup turn
+        diagnostic_q_idx = min(turn - 2, len(_DIAGNOSTIC_PROMPTS) - 1)
         if 0 <= diagnostic_q_idx < len(_DIAGNOSTIC_PROMPTS):
             mastery = _init_mastery_from_diagnostic(student_msg, diagnostic_q_idx, mastery)
 
-        complete = turn >= _cfg["session"]["diagnostic_questions"]
+        complete = (turn - 1) >= _cfg["session"]["diagnostic_questions"]
         return {
             "mastery_scores": mastery,
             "diagnostic_complete": complete,
@@ -249,6 +251,17 @@ def pedagogy_agent(state: TutoringState) -> dict:
             "elapsed_sec": round(state.get("elapsed_seconds", 0.0), 1),
         }]
 
+    # ── Topic cycling: once current topic is mastered, move to next weakest ──
+    next_topic = topic
+    if topic and mastery.get(topic, 0) >= _cfg["pcr"]["threshold_high"]:
+        # Find weakest concept not yet mastered
+        candidates = [
+            (c, m) for c, m in mastery.items()
+            if m < _cfg["pcr"]["threshold_high"] and c != topic
+        ]
+        if candidates:
+            next_topic = min(candidates, key=lambda x: x[1])[0]
+
     return {
         "mastery_scores": mastery,
         "consecutive_correct": consecutive_correct,
@@ -258,6 +271,8 @@ def pedagogy_agent(state: TutoringState) -> dict:
         "mistake_log": new_mistakes,   # Annotated[list, operator.add] — appends
         # Clear revisit_scheduled after one use so it doesn't loop indefinitely
         "revisit_scheduled": False,
+        # Cycle to next weakest topic once current is mastered
+        "current_topic": next_topic,
     }
 
 

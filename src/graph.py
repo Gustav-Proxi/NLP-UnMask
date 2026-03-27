@@ -81,4 +81,7 @@ def make_initial_state(session_id: str | None = None) -> TutoringState:
         revisit_scheduled=False,
         revisit_topic=None,
         _last_revisit_sec=0.0,
+        last_phase="rapport",
+        assessment_feedback=None,
+        visual_hint=None,
     )

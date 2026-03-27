@@ -2,7 +2,7 @@ llm:
   model: gpt-4o           # or "openai/gpt-4o" for OpenRouter
   temperature: 0.3
   local_model: llama3.1   # Ollama — used for rapport/wrapup phases
-  use_local_for: [rapport, wrapup]
+  use_local_for: []   # Ollama not running — route all phases through API
 
 embedding:
   provider: gemini        # "gemini" | "openai"
@@ -40,5 +40,5 @@ mastery:
   correct_gain: 0.15          # mastery increase per correct
   incorrect_loss: 0.05        # mastery decrease per incorrect
   weak_threshold: 0.4         # topics below this get revisit flag
-  consecutive_correct_for_advance: 2
+  consecutive_correct_for_advance: 5
   consecutive_incorrect_for_hint: 2

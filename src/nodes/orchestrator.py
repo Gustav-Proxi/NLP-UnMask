@@ -30,24 +30,30 @@ def orchestrator(state: TutoringState) -> dict:
     coverage = state["coverage_ratio"]
     diagnostic_complete = state["diagnostic_complete"]
 
+    def _transition(new_phase: str, extra: dict | None = None) -> dict:
+        """Return a phase transition dict, setting last_phase for app.py detection."""
+        result = {"phase": new_phase, "last_phase": phase}
+        if extra:
+            result.update(extra)
+        return result
+
     # ── Time-based ceiling overrides (highest priority) ──────────────────────
     if elapsed >= _S["wrapup_cutoff_sec"] and phase not in ("wrapup",):
-        return {"phase": "wrapup"}
+        return _transition("wrapup")
 
     if elapsed >= _S["assessment_cutoff_sec"] and phase not in ("assessment", "wrapup"):
-        return {"phase": "assessment"}
+        return _transition("assessment")
 
     # ── Event-based transitions ───────────────────────────────────────────────
     if phase == "rapport":
         if diagnostic_complete:
-            return {"phase": "tutoring"}
+            return _transition("tutoring")
         # Stay in rapport until diagnostic is done
 
     elif phase == "tutoring":
-        # Advance if student has demonstrated sufficient mastery
+        # Advance if student has demonstrated sufficient mastery across topics
         if consecutive_correct >= _M["consecutive_correct_for_advance"]:
-            if coverage >= 0.8:
-                return {"phase": "assessment", "consecutive_correct": 0}
+            return _transition("assessment", {"consecutive_correct": 0})
 
         # Proactive revisit: after revisit_after_sec, steer back to weakest topic
         revisit_after = _S.get("revisit_after_sec", 480)
@@ -80,7 +86,7 @@ def orchestrator(state: TutoringState) -> dict:
         pass
 
     # No phase change — return current phase unchanged
-    return {"phase": phase}
+    return {"phase": phase, "last_phase": phase}
 
 
 def should_retrieve(state: TutoringState) -> Literal["retrieval_planner", "socratic_generator"]:

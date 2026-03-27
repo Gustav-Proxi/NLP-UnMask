@@ -62,3 +62,10 @@ class TutoringState(TypedDict):
     revisit_scheduled: bool
     revisit_topic: Optional[str]
     _last_revisit_sec: float   # elapsed_sec when last revisit was triggered
+
+    # Phase transition tracking
+    last_phase: Phase          # previous phase — used by app.py to detect transitions
+    assessment_feedback: Optional[str]  # explicit feedback on student's assessment answer
+
+    # Visual aid — shown as separate UI card when student is struggling
+    visual_hint: Optional[str]

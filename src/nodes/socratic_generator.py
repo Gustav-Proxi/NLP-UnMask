@@ -60,6 +60,15 @@ class TopicReport(BaseModel):
     """One honest sentence about the student's performance on this concept.
     Be specific: reference what they got right or wrong. No hollow praise."""
 
+class Flashcard(BaseModel):
+    concept: str
+    """The concept ID, e.g. 'peripheral_nerves.radial'"""
+    front: str
+    """Question side of the flashcard — clinical or applied, max 1 sentence, ends with '?'."""
+    back: str
+    """Answer side — concise, factual, 1-2 sentences max."""
+
+
 class SessionSummary(BaseModel):
     overall_assessment: str
     """2-3 sentences summarising the session honestly. Name what went well AND
@@ -72,59 +81,118 @@ class SessionSummary(BaseModel):
     Empty list if no mistakes were logged."""
     study_recommendations: list[str]
     """2-3 concrete, actionable study tips based on weak topics."""
+    resources: list[str]
+    """3-4 specific study resources for the weakest topics. Mix formats:
+    - OpenStax A&P 2e chapter references (e.g. 'OpenStax A&P 2e Ch 13.4 — Brachial Plexus')
+    - Netter's / Gray's atlas plates for visual anatomy (e.g. 'Netter Plate 462 — Brachial Plexus Overview')
+    - KenHub or Visible Body search query (e.g. 'KenHub: search "median nerve course upper limb"')
+    - NBCOT-specific practice (e.g. 'NBCOT Prep: clinical scenarios for peripheral nerve injuries')
+    Reference real OpenStax 2e chapters (Ch 11=muscle, Ch 13=spinal/plexuses, Ch 14=PNS, Ch 15=ANS, Ch 16=sensorimotor)."""
+    diagram_suggestions: list[str]
+    """2-3 specific anatomical diagrams to study, each describing WHAT the diagram shows and WHY it helps.
+    Format: 'Netter Plate XXX — [Title]: shows [key structures] — useful for understanding [concept]'
+    OR: 'Draw from memory: [specific diagram e.g. brachial plexus tree C5-T1 showing roots/trunks/divisions/cords/branches]'"""
+    flashcards: list[Flashcard]
+    """4-6 flashcards covering the weakest topics from this session.
+    Mix conceptual (what is X?) and clinical (patient presents with Y, which nerve is damaged?) questions."""
+    next_session_questions: list[str]
+    """3 follow-up practice questions for the next session, ordered foundational→applied.
+    Focus on the weakest topics and any prerequisite gaps identified.
+    Each must end with '?'."""
     closing_reflection: str
     """One Socratic question for the student to think about before next session.
     Must end with '?'."""
 
 
+class AssessmentFeedback(BaseModel):
+    """Explicit evaluation of student's clinical scenario response."""
+    score: Literal["excellent", "good", "partial", "needs_work"]
+    """Overall quality of the student's clinical reasoning."""
+    what_was_correct: str
+    """1-2 sentences on what the student correctly identified."""
+    what_was_missing: str
+    """1-2 sentences on key gaps or errors in their reasoning."""
+    clinical_significance: str
+    """1 sentence explaining why these gaps matter for OT practice."""
+    follow_up_question: str
+    """One Socratic question to deepen understanding of the gap. Must end with '?'."""
+
+
 # ── System prompts ────────────────────────────────────────────────────────────
+
+_RAPPORT_WARMUP_SYSTEM = """\
+You are UnMask, a friendly Socratic tutor for OT students preparing for the NBCOT exam.
+This is your FIRST exchange with the student — they just replied to your greeting.
+Respond warmly and casually in 1-2 sentences ONLY:
+- Acknowledge what they said naturally (like a real person, not a bot)
+- Keep it brief and genuine — e.g. "Love the energy!" or "Totally get it, we'll keep it focused."
+Do NOT add any transition like "let's get started" — the first question will appear automatically below your reply.
+Do NOT ask any anatomy question. Do NOT end with "?". No more than 2 sentences."""
 
 _RAPPORT_SYSTEM = """\
 You are UnMask, a friendly Socratic tutor helping OT students prepare for the NBCOT exam.
-You are currently running a short diagnostic to calibrate the student's starting level.
-The diagnostic questions are provided externally — do NOT ask your own questions.
-React naturally to the student's answer in 1-2 sentences: acknowledge if correct/incorrect
-(without giving the full answer away), offer brief encouragement, and then stop.
-Do not repeat previous encouragement phrases you have already used."""
+You are running a short diagnostic. The next diagnostic question will be shown automatically — \
+you MUST NOT ask any question yourself. Do NOT end your response with "?".
+React to the student's answer in 1-2 sentences ONLY: briefly acknowledge correct/incorrect \
+(without revealing the full answer) and offer brief encouragement. Then stop completely.
+Examples of good responses:
+- "Exactly right — C5 to T1 are the five roots. Nice start!"
+- "Close! You've got the right range in mind. Keep going."
+- "Not quite, but good attempt — we'll revisit that."
+Do not ask follow-up questions. Do not say 'which topic' or 'what would you like to explore'."""
 
 _TUTORING_SYSTEM = """\
-You are UnMask, a Socratic tutor for OT anatomy/neuroscience (NBCOT prep).
+You are UnMask, a warm and encouraging Socratic tutor for OT anatomy (NBCOT prep).
+Talk like a real human tutor — natural, conversational, not stiff or robotic.
 
-RULES (strictly enforced by output schema — you cannot violate them):
-1. You KNOW the correct answer (it lives in internal_analysis.correct_answer).
-2. You NEVER state the answer in visible_response. The schema has no field for it.
-3. socratic_question must end with "?" and guide the student toward discovery.
-4. Turns 1-2: broad conceptual questions only. No partial answers.
-5. Calibrate your question to the student's demonstrated knowledge level.
-6. If student misconception is detected, address it indirectly via a question.
+HARD RULES:
+1. You KNOW the correct answer (internal_analysis.correct_answer) — never state it aloud.
+2. socratic_question MUST end with "?" and nudge the student toward the answer.
+3. Keep responses SHORT: encouragement = 1 natural sentence, question = 1 sentence.
+4. No bullet points, no headers, no "Rule 1:" style text in your response.
 
-CONTEXT CHUNKS (textbook source of truth):
+CONTEXT (textbook source of truth):
 {context}
 
-STUDENT MASTERY LEVEL: {mastery:.0%} on current topic
-RETRIEVAL MODE: {mode} (answer chunks {"NOT " if mode != "full_reveal" else ""}present in context)
-CONVERSATION SO FAR: {history}
-CURRENT TURN: {turn}
-CONSECUTIVE INCORRECT: {consecutive_incorrect}
+STUDENT MASTERY: {mastery:.0%} on current topic | RETRIEVAL MODE: {mode} (answer chunks {answer_visibility}present)
+CONVERSATION: {history}
+TURN: {turn} | CONSECUTIVE INCORRECT: {consecutive_incorrect}
 
-ENCOURAGEMENT RULES (mandatory):
-- consecutive_incorrect = 0 → genuine praise if student answered something, neutral if turn 1
-- consecutive_incorrect = 1 → "That's a tricky one" / "Not quite — let's approach it differently"
-- consecutive_incorrect >= 2 → direct acknowledgement of struggle + redirect, NO praise
-- NEVER use "great job", "well done", "you're doing great" when consecutive_incorrect > 0
+TONE GUIDE — encouragement must be exactly ONE sentence, original, not canned:
+- consecutive_incorrect = 0 → specific praise e.g. "Nice — you've got the root level right!"
+- consecutive_incorrect = 1 → warm redirect e.g. "Not quite, but think about the movement involved."
+- consecutive_incorrect = 2 → empathetic e.g. "This one trips a lot of people — let's try a fresh angle."
+- consecutive_incorrect >= 3 → step further back e.g. "Let's zoom out — what does this muscle attach to?"
+CRITICAL: Write ONE sentence only for encouragement. No joining two phrases with a dash or period.
+NEVER say "great job" / "well done" / "you're doing great" when consecutive_incorrect > 0.
 {revisit_block}"""
 
 _ASSESSMENT_SYSTEM = """\
 You are UnMask in assessment mode.
-Present a clinical scenario (do NOT reveal the answer in socratic_question).
-Ask the student to explain their clinical reasoning in free text.
-The scenario must be grounded in the provided textbook chunks.
-After the student responds, evaluate accuracy/completeness/reasoning quality.
+Present ONE clinical scenario grounded in the textbook chunks.
+Do NOT reveal the answer — ask the student to explain their reasoning.
+The scenario must test concepts with low mastery scores.
 
 CONTEXT CHUNKS:
 {context}
 
 MASTERY SCORES: {mastery_json}
+"""
+
+_ASSESSMENT_FEEDBACK_SYSTEM = """\
+You are evaluating a student's response to a clinical scenario in an OT anatomy session.
+Be honest and specific — do not soften weak responses.
+
+CLINICAL SCENARIO PRESENTED: {scenario}
+STUDENT RESPONSE: {student_response}
+TEXTBOOK CONTEXT (ground truth): {context}
+
+Generate an AssessmentFeedback with:
+- score: excellent/good/partial/needs_work based on reasoning quality
+- what_was_correct: what the student correctly identified (be specific)
+- what_was_missing: key gaps or errors (be specific — name the concepts)
+- clinical_significance: why these gaps matter in OT practice
+- follow_up_question: one Socratic question to guide them toward the gap
 """
 
 _WRAPUP_SYSTEM = """\
@@ -192,16 +260,40 @@ Topics covered: {topics_covered}
 Session duration: {duration_min:.1f} minutes
 Total turns: {total_turns}
 
-Generate a SessionSummary with:
-- topic_reports: one entry per covered concept, ordered weakest-first
-- overall_assessment: honest 2-3 sentence summary (name strengths AND weaknesses)
-- mistake_highlights: up to 3 specific misconceptions shown (empty list if none)
-- study_recommendations: 2-3 concrete actionable tips for the weak topics
-- closing_reflection: one Socratic question ending with '?' for next session"""
+Generate a SessionSummary with all fields:
+
+topic_reports: one entry per covered concept, ordered weakest-first
+overall_assessment: honest 2-3 sentence summary (name strengths AND weaknesses)
+mistake_highlights: up to 3 specific misconceptions shown (empty list if none)
+study_recommendations: 2-3 concrete actionable tips for the weak topics
+
+resources: 3-4 specific study resources, mixing:
+  - OpenStax A&P 2e chapters (Ch 11=muscle, Ch 13=spinal/plexuses, Ch 14=PNS, Ch 15=ANS, Ch 16=sensorimotor)
+    Example: 'OpenStax A&P 2e Ch 13.4 — Brachial Plexus: covers roots C5-T1, trunk/division/cord/branch structure'
+  - Netter's Atlas plates for visual anatomy
+    Example: 'Netter Plate 462 — Brachial Plexus: color-coded nerve roots to terminal branches'
+  - KenHub or Visible Body (free online)
+    Example: 'KenHub: search "median nerve" — interactive 3D model with clinical notes'
+  - NBCOT-specific practice
+    Example: 'NBCOT Prep: clinical scenarios — peripheral nerve injury splinting'
+
+diagram_suggestions: 2-3 anatomical diagrams to study, each with what to look for:
+  - Netter/Gray's plate reference with plate number AND what structures to trace
+  - OR a "draw from memory" prompt (drawing forces active recall)
+    Example: 'Draw from memory: brachial plexus tree — start at C5-T1 roots, add trunks (upper/middle/lower),
+    divisions, cords (lateral/medial/posterior), then 5 terminal branches'
+
+flashcards: 4-6 flashcards for the weakest topics, mixing:
+  - Pure recall: "What nerve roots form the median nerve?" → "C6, C7, C8, T1 (medial + lateral cord)"
+  - Clinical presentation: "Patient can't pinch thumb and index finger — which nerve?" → "Anterior interosseous branch of median nerve"
+  - Functional: "What is the first sign of ulnar nerve compression at the elbow?" → "Tingling in ring and little fingers (C8/T1 distribution)"
+
+next_session_questions: 3 practice questions, ordered foundational→applied, each ending '?'
+closing_reflection: one Socratic question ending with '?' for next session"""
 
 
-def _generate_session_summary(state: TutoringState) -> str:
-    """Generate a structured session summary and format it as markdown."""
+def _generate_session_summary(state: TutoringState) -> tuple[str, SessionSummary]:
+    """Generate a structured session summary. Returns (markdown_text, SessionSummary)."""
     import json
 
     mastery = state.get("mastery_scores", {})
@@ -261,9 +353,87 @@ def _generate_session_summary(state: TutoringState) -> str:
             lines.append(f"- {tip}")
         lines.append("")
 
+    # Resources
+    if summary.resources:
+        lines.append("### 📖 Study Resources\n")
+        for r in summary.resources:
+            lines.append(f"- {r}")
+        lines.append("")
+
+    # Diagram suggestions
+    if summary.diagram_suggestions:
+        lines.append("### 🖼️ Diagrams to Study\n")
+        for d in summary.diagram_suggestions:
+            lines.append(f"- {d}")
+        lines.append("")
+
+    # Flashcards
+    if summary.flashcards:
+        lines.append("### 🃏 Flashcards\n")
+        lines.append("*Study these — cover the answer, quiz yourself on each question:*\n")
+        for i, fc in enumerate(summary.flashcards, 1):
+            concept_label = fc.concept.replace("_", " ").replace(".", " › ")
+            lines.append(f"**Card {i}** `{concept_label}`")
+            lines.append(f"> **Q:** {fc.front}")
+            lines.append(f"> **A:** {fc.back}\n")
+        lines.append("")
+
+    # Next session questions
+    if summary.next_session_questions:
+        lines.append("### 🔁 Practice Questions for Next Session\n")
+        for i, q in enumerate(summary.next_session_questions, 1):
+            lines.append(f"**{i}.** {q}")
+        lines.append("")
+
     # Closing reflection
     lines.append(f"---\n**Before next session:** {summary.closing_reflection}")
 
+    return "\n".join(lines), summary
+
+
+# ── Helpers ───────────────────────────────────────────────────────────────────
+
+def _deduplicate_sentences(text: str) -> str:
+    """Remove adjacent duplicate sentences from LLM response."""
+    import re
+    sentences = re.split(r'(?<=[.!?])\s+', text.strip())
+    deduped = []
+    for s in sentences:
+        if not deduped or s.strip() != deduped[-1].strip():
+            deduped.append(s)
+    return " ".join(deduped)
+
+
+def _generate_assessment_feedback(state: TutoringState, scenario: str, student_response: str) -> str:
+    """Generate explicit structured feedback on a student's assessment answer."""
+    import json
+    chunks = state.get("retrieved_chunks", [])
+    context_text = "\n\n".join(
+        f"[{c.get('chunk_type','ctx').upper()}] {c['text']}" for c in chunks
+    ) or "(no context)"
+
+    client = _get_client()
+    prompt = _ASSESSMENT_FEEDBACK_SYSTEM.format(
+        scenario=scenario,
+        student_response=student_response,
+        context=context_text,
+    )
+    resp = client.beta.chat.completions.parse(
+        model=os.getenv("OPENAI_MODEL", _cfg["llm"]["model"]),
+        messages=[{"role": "user", "content": prompt}],
+        response_format=AssessmentFeedback,
+        temperature=0.3,
+    )
+    fb: AssessmentFeedback = resp.choices[0].message.parsed
+
+    score_icon = {"excellent": "✅", "good": "🟢", "partial": "🟡", "needs_work": "❌"}.get(fb.score, "⬜")
+    lines = [
+        f"### {score_icon} Assessment Feedback — {fb.score.replace('_', ' ').title()}\n",
+        f"**What you got right:** {fb.what_was_correct}\n",
+        f"**What was missing:** {fb.what_was_missing}\n",
+        f"**Why it matters clinically:** {fb.clinical_significance}\n",
+        f"\n**To think about:** {fb.follow_up_question}",
+    ]
     return "\n".join(lines)
 
 
@@ -294,21 +464,50 @@ def socratic_generator(state: TutoringState) -> dict:
     # ── Rapport: plain LLM (local or API) ──────────────────────────────────
     if phase == "rapport":
         user = state["student_message"] or "Hello"
+        # Turn 0: casual warmup. Turn 1+: reacting to a diagnostic answer.
+        if turn == 0:
+            system_prompt = _RAPPORT_WARMUP_SYSTEM
+            max_tok = 120
+        else:
+            # Tell the LLM which question was just answered so the reaction is accurate
+            import yaml as _yaml
+            with open("config.yaml") as _f:
+                _session_cfg = _yaml.safe_load(_f)["session"]
+            _diag_prompts = [
+                "What spinal cord levels make up the brachial plexus?",
+                "Name the four rotator cuff muscles.",
+                "Which nerve innervates the deltoid muscle?",
+                "What is the function of the supraspinatus?",
+            ]
+            diag_q_idx = max(0, turn - 2)  # turn=1→warmup, turn=2→Q0 answer, etc.
+            asked_q = _diag_prompts[diag_q_idx] if diag_q_idx < len(_diag_prompts) else ""
+            system_prompt = _RAPPORT_SYSTEM + (
+                f"\n\nQUESTION THE STUDENT JUST ANSWERED: \"{asked_q}\"\n"
+                "React specifically to their answer to THIS question. "
+                "Do NOT reference other anatomy topics."
+            )
+            max_tok = 80
         text = None
         if _use_local(phase):
             try:
-                text = _call_ollama(_RAPPORT_SYSTEM, user, history=history)
+                text = _call_ollama(system_prompt, user, history=history)
             except Exception:
                 pass
         if text is None:
             client = _get_client()
             resp = client.chat.completions.create(
                 model=os.getenv("OPENAI_MODEL", _cfg["llm"]["model"]),
-                messages=[{"role": "system", "content": _RAPPORT_SYSTEM}, *history[-6:], {"role": "user", "content": user}],
-                max_tokens=120,
-                temperature=0.7,
+                messages=[{"role": "system", "content": system_prompt}, *history[-6:], {"role": "user", "content": user}],
+                max_tokens=max_tok,
+                temperature=0.6,
             )
             text = resp.choices[0].message.content.strip()
+        # Strip any question the model generated — the next diagnostic Q is appended by app.py
+        if text and "?" in text:
+            import re
+            sentences = re.split(r'(?<=[.!])\s+', text.strip())
+            clean = [s for s in sentences if not s.strip().endswith("?")]
+            text = " ".join(clean).strip() or text.split("?")[0].strip() + "."
         return {
             "generated_response": text,
             "_internal_analysis": None,
@@ -321,10 +520,10 @@ def socratic_generator(state: TutoringState) -> dict:
 
     # ── Wrapup: structured SessionSummary via GPT-4o ────────────────────────
     if phase == "wrapup":
-        formatted = _generate_session_summary(state)
+        formatted, summary_obj = _generate_session_summary(state)
         return {
             "generated_response": formatted,
-            "_internal_analysis": None,
+            "_internal_analysis": summary_obj.model_dump(),
             "conversation_history": [
                 {"role": "user", "content": "(session ended)"},
                 {"role": "assistant", "content": formatted},
@@ -356,15 +555,47 @@ def socratic_generator(state: TutoringState) -> dict:
                 f" Socratic question that probes the same concept from a fresh angle."
             )
 
+        consecutive_incorrect = state.get("consecutive_incorrect", 0)
+
         system = _TUTORING_SYSTEM.format(
             context=context_text,
             mastery=mastery.get(topic, _cfg["mastery"]["default_prior"]),
             mode=mode,
+            answer_visibility="NOT " if mode != "full_reveal" else "",
             history=recent_history,
             turn=turn,
-            consecutive_incorrect=state.get("consecutive_incorrect", 0),
+            consecutive_incorrect=consecutive_incorrect,
             revisit_block=revisit_block,
         )
+
+        # Build visual hint separately — shown as a UI card by app.py, NOT in the LLM response
+        visual_hint = None
+        if consecutive_incorrect >= 2:
+            # Prefer figure chunks that match the current topic
+            fig_chunks = [
+                c for c in chunks
+                if c.get("chunk_type") in ("figure", "figure_description")
+                and topic and c.get("concept", "").startswith(topic.split(".")[0])
+            ]
+            # Fall back to any figure chunk, then to the most relevant context chunk
+            if not fig_chunks:
+                fig_chunks = [c for c in chunks if c.get("chunk_type") in ("figure", "figure_description")]
+            if fig_chunks:
+                fc = fig_chunks[0]
+                # Store raw concept id for image lookup in app.py
+                visual_hint = f"__concept__:{fc.get('concept', topic or '')}\n{fc['text']}"
+            else:
+                # Fall back: use the best non-answer context chunk for this topic
+                ctx_chunks = [
+                    c for c in chunks
+                    if not c.get("is_answer_chunk")
+                    and topic and c.get("concept", "").startswith(topic.split(".")[0])
+                ]
+                if not ctx_chunks:
+                    ctx_chunks = [c for c in chunks if not c.get("is_answer_chunk")]
+                if ctx_chunks:
+                    best = ctx_chunks[0]
+                    visual_hint = f"__concept__:{best.get('concept', topic or '')}\n{best['text'][:400]}"
     elif phase == "assessment":
         import json
         system = _ASSESSMENT_SYSTEM.format(
@@ -417,11 +648,26 @@ def socratic_generator(state: TutoringState) -> dict:
 
         response_text = candidate
 
-    response_text = candidate  # use last generated candidate
+    response_text = _deduplicate_sentences(candidate)  # remove adjacent duplicates
+
+    # ── Assessment: generate explicit feedback on student's clinical answer ──
+    assessment_feedback = None
+    if phase == "assessment" and turn > 0:
+        # Find the scenario from history (the last assistant message before this user turn)
+        scenario = next(
+            (m["content"] for m in reversed(history) if m["role"] == "assistant"),
+            "(clinical scenario)",
+        )
+        try:
+            assessment_feedback = _generate_assessment_feedback(state, scenario, user_msg)
+        except Exception:
+            pass  # non-fatal — degrade gracefully
 
     return {
         "generated_response": response_text,
         "_internal_analysis": internal_analysis.model_dump() if internal_analysis else None,
+        "assessment_feedback": assessment_feedback,
+        "visual_hint": visual_hint if phase == "tutoring" else None,
         "conversation_history": [
             {"role": "user", "content": user_msg},
             {"role": "assistant", "content": response_text},
