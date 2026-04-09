@@ -4,6 +4,7 @@
 
 # Qdrant local data
 qdrant_data/
+qdrant_storage/
 
 # Python
 __pycache__/
