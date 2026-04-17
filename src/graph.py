@@ -84,4 +84,6 @@ def make_initial_state(session_id: str | None = None) -> TutoringState:
         last_phase="rapport",
         assessment_feedback=None,
         visual_hint=None,
+        study_focus=None,
+        learning_mode=None,
     )

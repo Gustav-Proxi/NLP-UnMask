@@ -69,3 +69,7 @@ class TutoringState(TypedDict):
 
     # Visual aid — shown as separate UI card when student is struggling
     visual_hint: Optional[str]
+
+    # Onboarding preferences — captured from the first user message before diagnostics
+    study_focus: Optional[str]   # "everything" | "revision" | "specific: <topic>"
+    learning_mode: Optional[str] # "text" | "visual"
