@@ -68,6 +68,22 @@ _PHASE_TRANSITION_MSGS = {
 }
 
 
+def _parse_onboarding(text: str) -> tuple[str, str]:
+    """Extract study_focus and learning_mode from the user's first greeting reply."""
+    lower = text.lower()
+    if any(w in lower for w in ("diagram", "visual", "image", "picture", "figure", "draw")):
+        learning_mode = "visual"
+    else:
+        learning_mode = "text"
+    if any(w in lower for w in ("revise", "revision", "review", "recap", "revisit")):
+        study_focus = "revision"
+    elif any(w in lower for w in ("everything", "all", "full", "complete", "entire", "whole")):
+        study_focus = "everything"
+    else:
+        study_focus = f"specific: {text.strip()[:120]}"
+    return study_focus, learning_mode
+
+
 # ── Session lifecycle ─────────────────────────────────────────────────────────
 
 @cl.on_chat_start
@@ -79,19 +95,28 @@ async def on_chat_start():
     cl.user_session.set("warmup_done", False)    # Track casual warm-up exchange
     cl.user_session.set("diag_q_index", 0)      # Next diagnostic question to inject
 
-    # Warm greeting — no diagnostic question yet
+    # Warm greeting — asks how they're doing, what to focus on, and learning preference
     welcome = (
-        "# 👋 Hey there! Welcome to UnMask\n\n"
+        "# 👋 Hi! Welcome to UnMask\n\n"
         "I'm your personal NBCOT anatomy study companion. "
         "I use the **Socratic method** — meaning I guide you *toward* answers rather than just telling you. "
         "It's more work, but the understanding sticks way better for exams. 💪\n\n"
-        "**Here's the plan for today:**\n"
-        "1. 🩺 **Quick Diagnostic** ({n} questions) — helps me figure out where to focus\n"
-        "2. 📖 **Targeted Tutoring** — deep Socratic dives on your weak spots\n"
+        "**Here's the plan for today's 15-minute session:**\n"
+        "1. 🩺 **Quick Diagnostic** ({n} questions) — calibrates where we start\n"
+        "2. 📖 **Targeted Tutoring** — Socratic deep-dives on your weak spots\n"
         "3. 🧪 **Clinical Assessment** — a real-world NBCOT-style scenario\n"
-        "4. 📋 **Session Report** — honest feedback, flashcards, resources & study diagrams\n\n"
+        "4. 📋 **Session Report** — honest feedback, flashcards, resources & diagrams\n\n"
         "---\n\n"
-        "**But first — how are you doing today?** Ready to dive in, or is this a 'I'm exhausted but here' kind of session? 😄"
+        "**Before we dive in — three quick things:**\n\n"
+        "1. **How's studying going?** (Helps me know where your head is at)\n"
+        "2. **What would you like to focus on today?**\n"
+        "   - A specific concept or muscle group *(tell me which one)*\n"
+        "   - Cover everything systematically\n"
+        "   - Revise and reinforce what you've already covered\n"
+        "3. **How do you learn best?**\n"
+        "   - Written explanations & Q&A *(text)*\n"
+        "   - Diagrams and visual breakdowns *(visual)*\n\n"
+        "Just reply naturally — I'll pick up on your preferences and we'll get going! 😊"
     ).format(n=_DIAGNOSTIC_QUESTIONS)
 
     await cl.Message(content=welcome, author="UnMask").send()
@@ -111,6 +136,13 @@ async def on_message(message: cl.Message):
     # TutoringState.conversation_history uses operator.add, so passing the full
     # history again would double it on every turn (checkpointer already holds it).
     state["conversation_history"] = []
+
+    # ── Capture study preferences from first message (before graph call) ────
+    warmup_already_done = cl.user_session.get("warmup_done", False)
+    if not warmup_already_done:
+        study_focus, learning_mode = _parse_onboarding(message.content)
+        state["study_focus"] = study_focus
+        state["learning_mode"] = learning_mode
 
     # ── Show loading indicator immediately ──────────────────────────────────
     thinking_msg = cl.Message(content="⏳ *Thinking...*", author="UnMask")

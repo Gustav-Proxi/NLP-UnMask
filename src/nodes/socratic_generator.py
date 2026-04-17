@@ -157,6 +157,7 @@ CONTEXT (textbook source of truth):
 STUDENT MASTERY: {mastery:.0%} on current topic | RETRIEVAL MODE: {mode} (answer chunks {answer_visibility}present)
 CONVERSATION: {history}
 TURN: {turn} | CONSECUTIVE INCORRECT: {consecutive_incorrect}
+STUDY FOCUS: {study_focus} | LEARNING MODE: {learning_mode} — if "visual", use spatial anatomical descriptions and reference diagram layouts; if "text", use clear prose explanations.
 
 TONE GUIDE — encouragement must be exactly ONE sentence, original, not canned:
 - consecutive_incorrect = 0 → specific praise e.g. "Nice — you've got the root level right!"
@@ -566,6 +567,8 @@ def socratic_generator(state: TutoringState) -> dict:
             turn=turn,
             consecutive_incorrect=consecutive_incorrect,
             revisit_block=revisit_block,
+            study_focus=state.get("study_focus") or "general",
+            learning_mode=state.get("learning_mode") or "text",
         )
 
         # Build visual hint separately — shown as a UI card by app.py, NOT in the LLM response
