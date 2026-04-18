@@ -125,4 +125,106 @@ Gold answer present only in \texttt{InternalAnalysis} (stripped before
 rendering); absent from retrieved Qdrant chunks due to PCR \texttt{must\_not}
 filter.
 
+%% ─────────────────────────────────────────────────────────────
+\section*{Appendix B: Onboarding, Visual Aid, and Session Summary}
+
+\subsection*{B.1 Personalized Onboarding and Diagnostic Reordering}
+
+The welcome prompt asks a single conversational question; the student's reply
+is parsed for \texttt{study\_focus} and \texttt{learning\_mode} before the
+LangGraph graph is invoked.
+
+\noindent\textbf{UnMask welcome:}\\
+\textit{``Hey! Welcome to UnMask. I'm your NBCOT anatomy study companion. I
+use the Socratic method to help you build clinical reasoning, not just recall
+facts. What are you finding toughest right now---and do you prefer learning
+with diagrams or written Q\&A? (Just reply naturally, I'll calibrate from
+there!)''}
+
+\noindent\textbf{Student:} \textit{``I keep getting confused by the brachial
+plexus, especially which levels form it. I think I learn better with
+diagrams.''}
+
+\noindent\textbf{System action (Orchestrator, before graph.invoke):}\\
+\texttt{study\_focus = ``brachial plexus''}\\
+\texttt{learning\_mode = ``visual''}\\
+\texttt{diag\_order = [0, 2, 3, 1]} \quad (brachial-plexus questions first)\\
+\texttt{visual\_hint\_threshold = 1} \quad (diagram after first incorrect response)
+
+\noindent\textbf{Diagnostic Q1 (reordered)} $|$ Phase: \texttt{rapport}\\
+\textit{UnMask:} ``Quick diagnostic -- 4 questions to calibrate where we start:
+\textbf{Q1 of 4:} Which spinal cord levels give rise to the brachial plexus?''\\
+\textit{Student:} ``C5 to T1'' $\to$ \textbf{Correct.}
+\texttt{mastery[brachial\_plexus.origin] = 0.50}
+
+\subsection*{B.2 Visual Aid Trigger (Gray's Anatomy Plate)}
+
+Visual mode threshold is 1. Below: first incorrect answer in Tutoring phase.
+
+\noindent\textbf{Turn 1} $|$ PCR: \texttt{context\_only} $|$ Phase: \texttt{tutoring}\\
+\textit{UnMask:} ``How do the C5--T1 roots combine to form the three trunks
+of the brachial plexus?''\\
+\textit{Student:} ``I'm not sure.'' $\to$ \textbf{Incorrect.}\\
+\texttt{consecutive\_incorrect = 1 $\geq$ threshold (1)}
+
+\noindent\textbf{System action:} \texttt{cl.Image(path=public/anatomy/brachial\_plexus.png,
+display="inline")} appended to next message.
+File: Gray809 (public domain, Wikimedia Commons), 108~KB PNG.
+
+\noindent\textbf{UnMask reply with inline plate:}\\
+\textit{``That's a tricky one to visualize! Here is the brachial plexus
+diagram for reference. [Gray809 image renders inline.] Look at where C5--C6
+converge---what structure do they form at that junction?''}
+
+\subsection*{B.3 Session Wrapup Summary (Structured Output)}
+
+At $t \geq 840$s the Orchestrator triggers the \texttt{wrapup} phase.
+GPT-4o \texttt{response\_format=SessionSummary} produces:
+
+\begin{small}
+\begin{verbatim}
+overall_assessment:
+  "You showed solid recall of the brachial plexus root levels
+   (C5-T1) and correctly identified radial nerve wrist drop.
+   Trunk formation and teres minor innervation need more work."
+
+topic_reports:
+  - concept: brachial_plexus.trunks
+    mastery_score: 0.25
+    status: needs_review
+    honest_feedback: "You struggled here in turns 1 and 4;
+      review how C5-C6 form the upper trunk specifically."
+  - concept: brachial_plexus.origin
+    mastery_score: 0.50
+    status: progressing
+    honest_feedback: "Root levels correct; reinforce
+      anterior rami distinction."
+  - concept: peripheral_nerves.radial
+    mastery_score: 0.72
+    status: mastered
+    honest_feedback: "Wrist drop presentation identified
+      correctly with good reasoning."
+
+mistake_highlights:
+  - "Confused upper trunk formation (C5+C6) with C5 alone."
+  - "Did not recall teres minor as second axillary nerve target."
+
+study_recommendations:
+  - "Draw the RTTDC mnemonic (Roots-Trunks-Divisions-Cords)."
+  - "Practice Phalen's and Tinel's sign sequences out loud."
+
+closing_reflection:
+  "If a patient presents with deltoid weakness and lateral arm
+   numbness post shoulder dislocation, which nerve and which
+   cord of the brachial plexus would you evaluate first?"
+\end{verbatim}
+\end{small}
+
+\noindent The \texttt{mistake\_highlights} field is populated from
+\texttt{mistake\_log} entries whose \texttt{misconception} strings were
+captured at the time of each incorrect answer (hidden
+\texttt{InternalAnalysis.student\_misconception}).
+The \texttt{closing\_reflection} ends with ``?'' -- the session ends on a
+Socratic note, not a declarative summary.
+
 \end{document}
