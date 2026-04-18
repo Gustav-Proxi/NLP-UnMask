@@ -203,11 +203,10 @@ Wrapup     & $t\geq$840s       & Session end                    & 840--900s \\
 \label{tab:phases}
 \end{table}
 
-The \texttt{TutoringState} TypedDict flows through five graph nodes:
-\texttt{orchestrator $\to$ retrieval\_planner $\to$ socratic\_generator $\to$
-pedagogy\_agent}.
-A conditional edge in the orchestrator bypasses retrieval for Rapport and
-Wrapup phases.
+The \texttt{TutoringState} TypedDict flows through four nodes
+(Figure~\ref{fig:architecture}).
+A conditional edge in the orchestrator bypasses retrieval for Rapport
+and Wrapup phases.
 
 \subsection{Student Interface (Chainlit)}
 
@@ -229,12 +228,11 @@ visual learners receive a diagram after the first incorrect response;
 Q\&A learners after the second.
 
 \paragraph{Inline anatomical diagrams.}
-When \texttt{consecutive\_incorrect} $\geq$ threshold, the UI appends a
-\texttt{cl.Image} element (Chainlit inline display) showing the relevant
-Gray's Anatomy plate from \texttt{public/anatomy/} (8 public-domain PNG files
-sourced via the Wikimedia Commons API).
-This replaces the Socratic question's ASCII diagram fallback with an actual
-anatomical illustration.
+The UI appends a \texttt{cl.Image} element (Chainlit inline display) once
+\texttt{consecutive\_incorrect} $\geq$ threshold, showing the relevant
+Gray's Anatomy plate from \texttt{public/anatomy/} (8 public-domain PNGs
+sourced via the Wikimedia Commons API), replacing the ASCII diagram fallback
+with an actual anatomical illustration.
 
 \subsection{Progressive Context Revelation (PCR)}
 \label{sec:pcr}

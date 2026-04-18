@@ -3,6 +3,18 @@
 \usepackage{times}
 \usepackage{latexsym}
 \usepackage{microtype}
+\usepackage{listings}
+\usepackage{xcolor}
+\lstset{
+  basicstyle=\ttfamily\scriptsize,
+  breaklines=true,
+  breakatwhitespace=false,
+  frame=single,
+  backgroundcolor=\color{gray!8},
+  aboveskip=4pt,
+  belowskip=4pt,
+  columns=flexible,
+}
 
 \title{UnMask: Supplementary Material\\
 \large Conversation Transcripts (Appendix A)}
@@ -145,11 +157,13 @@ there!)''}
 plexus, especially which levels form it. I think I learn better with
 diagrams.''}
 
-\noindent\textbf{System action (Orchestrator, before graph.invoke):}\\
-\texttt{study\_focus = ``brachial plexus''}\\
-\texttt{learning\_mode = ``visual''}\\
-\texttt{diag\_order = [0, 2, 3, 1]} \quad (brachial-plexus questions first)\\
-\texttt{visual\_hint\_threshold = 1} \quad (diagram after first incorrect response)
+\noindent\textbf{System action} (Orchestrator, before \texttt{graph.invoke}):
+\begin{lstlisting}
+study_focus = "brachial plexus"
+learning_mode = "visual"
+diag_order = [0, 2, 3, 1]  # BP questions first
+visual_hint_threshold = 1   # diagram on 1st wrong
+\end{lstlisting}
 
 \noindent\textbf{Diagnostic Q1 (reordered)} $|$ Phase: \texttt{rapport}\\
 \textit{UnMask:} ``Quick diagnostic -- 4 questions to calibrate where we start:
@@ -164,12 +178,16 @@ Visual mode threshold is 1. Below: first incorrect answer in Tutoring phase.
 \noindent\textbf{Turn 1} $|$ PCR: \texttt{context\_only} $|$ Phase: \texttt{tutoring}\\
 \textit{UnMask:} ``How do the C5--T1 roots combine to form the three trunks
 of the brachial plexus?''\\
-\textit{Student:} ``I'm not sure.'' $\to$ \textbf{Incorrect.}\\
-\texttt{consecutive\_incorrect = 1 $\geq$ threshold (1)}
+\textit{Student:} ``I'm not sure.'' $\to$ \textbf{Incorrect.}
+\begin{lstlisting}
+consecutive_incorrect = 1  # >= threshold (1)
+\end{lstlisting}
 
-\noindent\textbf{System action:} \texttt{cl.Image(path=public/anatomy/brachial\_plexus.png,
-display="inline")} appended to next message.
-File: Gray809 (public domain, Wikimedia Commons), 108~KB PNG.
+\noindent\textbf{System action} (Gray809, public domain, 108~KB PNG):
+\begin{lstlisting}
+cl.Image(path="public/anatomy/brachial_plexus.png",
+         display="inline")  # appended to reply
+\end{lstlisting}
 
 \noindent\textbf{UnMask reply with inline plate:}\\
 \textit{``That's a tricky one to visualize! Here is the brachial plexus
@@ -178,22 +196,20 @@ converge---what structure do they form at that junction?''}
 
 \subsection*{B.3 Session Wrapup Summary (Structured Output)}
 
-At $t \geq 840$s the Orchestrator triggers the \texttt{wrapup} phase.
-GPT-4o \texttt{response\_format=SessionSummary} produces:
+At wrapup ($t \geq 840$s), GPT-4o structured output produces
+a \texttt{SessionSummary}:
 
-\begin{small}
-\begin{verbatim}
+\begin{lstlisting}
 overall_assessment:
-  "You showed solid recall of the brachial plexus root levels
-   (C5-T1) and correctly identified radial nerve wrist drop.
-   Trunk formation and teres minor innervation need more work."
+  "Solid C5-T1 recall and correct radial wrist drop.
+   Trunk formation and teres minor need more work."
 
 topic_reports:
   - concept: brachial_plexus.trunks
     mastery_score: 0.25
     status: needs_review
-    honest_feedback: "You struggled here in turns 1 and 4;
-      review how C5-C6 form the upper trunk specifically."
+    honest_feedback: "Struggled turns 1+4; review
+      how C5-C6 form the upper trunk."
   - concept: brachial_plexus.origin
     mastery_score: 0.50
     status: progressing
@@ -202,23 +218,22 @@ topic_reports:
   - concept: peripheral_nerves.radial
     mastery_score: 0.72
     status: mastered
-    honest_feedback: "Wrist drop presentation identified
-      correctly with good reasoning."
+    honest_feedback: "Wrist drop identified correctly
+      with good clinical reasoning."
 
 mistake_highlights:
-  - "Confused upper trunk formation (C5+C6) with C5 alone."
-  - "Did not recall teres minor as second axillary nerve target."
+  - "Confused upper trunk (C5+C6) with C5 alone."
+  - "Missed teres minor (2nd axillary target)."
 
 study_recommendations:
-  - "Draw the RTTDC mnemonic (Roots-Trunks-Divisions-Cords)."
-  - "Practice Phalen's and Tinel's sign sequences out loud."
+  - "Draw RTTDC (Roots-Trunks-Divisions-Cords)."
+  - "Practice Phalen's and Tinel's sign sequences."
 
 closing_reflection:
-  "If a patient presents with deltoid weakness and lateral arm
-   numbness post shoulder dislocation, which nerve and which
-   cord of the brachial plexus would you evaluate first?"
-\end{verbatim}
-\end{small}
+  "Patient has deltoid weakness and lateral arm
+   numbness post-dislocation. Which nerve and cord
+   would you evaluate first?"
+\end{lstlisting}
 
 \noindent The \texttt{mistake\_highlights} field is populated from
 \texttt{mistake\_log} entries whose \texttt{misconception} strings were
