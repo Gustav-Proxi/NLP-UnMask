@@ -33,7 +33,7 @@ The P3 specification requires 5 conversation transcripts demonstrating no
 answer leak before the 3rd turn.
 All transcripts were generated live from UnMask with cold-start mastery = 0.20
 (PCR \texttt{context\_only} mode).
-Gold answers are shown for grader reference only---they were present in
+Gold answers are shown for grader reference only; they were present in
 \texttt{InternalAnalysis} (hidden) and absent from \texttt{VisibleResponse}
 (shown to student).
 Leak status verified by both layers of the answer-leak detector.
@@ -92,7 +92,7 @@ divisions of the brachial plexus?\\
 {\small\textit{[Gold held: ``Radial nerve innervates all wrist extensor muscles'']}}
 
 \noindent\textbf{Turn 3} $|$ PCR: \texttt{prerequisite\_first} $|$ Leak: None $|$ Ends `?': Yes\\
-\textit{Student:} What about sensation---where would the patient feel numbness?\\
+\textit{Student:} What about sensation: where would the patient feel numbness?\\
 \textit{UnMask:} Which specific area on the dorsal side of the hand and forearm would you expect to experience numbness if the radial nerve is injured?\\
 {\small\textit{[Gold confirmed: ``Posterior forearm and dorsal hand; first dorsal web space'']}}
 
@@ -104,7 +104,7 @@ divisions of the brachial plexus?\\
 {\small\textit{[Gold held: ``Supraspinatus, infraspinatus, teres minor, subscapularis (SITS)'']}}
 
 \noindent\textbf{Turn 2} $|$ PCR: \texttt{context\_only} $|$ Leak: None $|$ Ends `?': Yes\\
-\textit{Student:} I know supraspinatus---what about the others on the posterior scapula?\\
+\textit{Student:} I know supraspinatus, but what about the others on the posterior scapula?\\
 \textit{UnMask:} What are the names of the rotator cuff muscles that originate from the infraspinous fossa and the teres minor region on the posterior scapula?\\
 {\small\textit{[Gold held: ``Infraspinatus and teres minor'']}}
 
@@ -149,7 +149,7 @@ LangGraph graph is invoked.
 \noindent\textbf{UnMask welcome:}\\
 \textit{``Hey! Welcome to UnMask. I'm your NBCOT anatomy study companion. I
 use the Socratic method to help you build clinical reasoning, not just recall
-facts. What are you finding toughest right now---and do you prefer learning
+facts. What are you finding toughest right now, and do you prefer learning
 with diagrams or written Q\&A? (Just reply naturally, I'll calibrate from
 there!)''}
 
@@ -192,7 +192,7 @@ cl.Image(path="public/anatomy/brachial_plexus.png",
 \noindent\textbf{UnMask reply with inline plate:}\\
 \textit{``That's a tricky one to visualize! Here is the brachial plexus
 diagram for reference. [Gray809 image renders inline.] Look at where C5--C6
-converge---what structure do they form at that junction?''}
+converge: what structure do they form at that junction?''}
 
 \subsection*{B.3 Session Wrapup Summary (Structured Output)}
 
