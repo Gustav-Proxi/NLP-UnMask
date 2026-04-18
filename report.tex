@@ -217,15 +217,62 @@ NLI verdict---directly satisfying the requirement that the UI show how chunks
 are being processed.
 
 \paragraph{Personalized onboarding.}
-A single conversational opening prompt (``What are you finding toughest right
-now---diagrams or written Q\&A?'') is parsed by the Orchestrator to extract
-\texttt{study\_focus} (e.g., brachial plexus, rotator cuff) and
-\texttt{learning\_mode} (visual / Q\&A).
-\texttt{study\_focus} reorders the four diagnostic questions so the student's
-declared weak area appears first.
+A single conversational opening prompt is parsed by the Orchestrator to
+extract \texttt{study\_focus} (e.g., brachial plexus, rotator cuff) and
+\texttt{learning\_mode} (visual / Q\&A) before the LangGraph graph is
+invoked.
+\texttt{study\_focus} reorders the four diagnostic questions so the
+student's declared weak area appears first.
 \texttt{learning\_mode} adjusts the visual-hint threshold:
 visual learners receive a diagram after the first incorrect response;
 Q\&A learners after the second.
+Figure~\ref{fig:onboarding} shows the full parse-to-render pipeline.
+
+%% ── Onboarding + visual aid pipeline ───────────────────────────
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+  >=Stealth,
+  node distance=0.38cm and 0.55cm,
+  box/.style={draw, rounded corners=3pt, fill=#1,
+              minimum width=2.55cm, align=center,
+              font=\scriptsize\strut, inner sep=3pt},
+  arr/.style={->, thick},
+  darr/.style={->, thick, dashed, gray!60},
+]
+%% Row 1: student message
+\node[box=green!18] (msg)
+  {Student msg\\``...brachial plexus,\\prefer diagrams''};
+%% Row 2: orchestrator
+\node[box=blue!14, below=0.45cm of msg] (orch)
+  {Orchestrator\\(parse before invoke)};
+\draw[arr] (msg) -- (orch);
+%% Row 3: two extracted fields
+\node[box=orange!20, below left=0.42cm and 0.28cm of orch] (sf)
+  {\texttt{study\_focus}\\``brachial plexus''};
+\node[box=orange!20, below right=0.42cm and 0.28cm of orch] (lm)
+  {\texttt{learning\_mode}\\``visual''};
+\draw[arr] (orch) -| (sf);
+\draw[arr] (orch) -| (lm);
+%% Row 4: downstream effects
+\node[box=gray!14, below=0.38cm of sf] (diag)
+  {diag\_order [0,2,3,1]\\BP questions first};
+\node[box=gray!14, below=0.38cm of lm] (thr)
+  {threshold = 1\\(Q\&A: 2)};
+\draw[arr] (sf) -- (diag);
+\draw[arr] (lm) -- (thr);
+%% Row 5: visual aid render
+\node[box=green!18, below=0.38cm of thr] (img)
+  {\texttt{cl.Image}\\Gray's Anatomy plate\\rendered inline};
+\draw[arr] (thr) -- (img)
+  node[right, font=\tiny, midway]{$\geq$ threshold};
+\end{tikzpicture}
+\caption{Personalized onboarding and visual aid pipeline.
+First message parsed before \texttt{graph.invoke}: \texttt{study\_focus}
+reorders diagnostics; \texttt{learning\_mode} sets the threshold
+that triggers an inline Gray's Anatomy plate via \texttt{cl.Image}.}
+\label{fig:onboarding}
+\end{figure}
 
 \paragraph{Inline anatomical diagrams.}
 The UI appends a \texttt{cl.Image} element (Chainlit inline display) once
