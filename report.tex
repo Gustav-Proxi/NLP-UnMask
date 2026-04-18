@@ -14,6 +14,8 @@
 \usepackage{tabularx}
 \usepackage{array}
 \usepackage{pifont}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit,backgrounds,calc}
 
 \lstset{
   basicstyle=\ttfamily\scriptsize,
@@ -80,31 +82,102 @@ that no adversarial prompt can bypass.
 %% ─────────────────────────────────────────────────────────────
 \section{Related Work}
 
-\paragraph{Khanmigo (Khan Academy)} relies entirely on GPT-4 system prompts
-for Socratic behavior; the retrieval layer returns all documents including
-answer text.
+Table~\ref{tab:related} summarises the key distinctions.
+Dinucu-Jianu et al.\ \cite{tutorrl2025} showed that larger LLMs exhibit
+\emph{higher} solution leakage---parametric knowledge overrides system prompts---motivating retrieval-layer enforcement.
+Corrective RAG \cite{crag2024} adds a self-assessment step after retrieval
+(+19\% PopQA, +36.6\% PubHealth); no prior work applies CRAG in educational tutoring.
 
-\paragraph{SocraticLM} \cite{socraticlm2024} fine-tunes a model to produce
-Socratic dialogue but has no retrieval component, leaving parametric knowledge
-unconstrained.
-
-\paragraph{KELE} \cite{kele2025} separates planning and execution into two
-agents, but both agents have full context access to the answer.
-
-\paragraph{TutorLLM} \cite{tutorllm2024}---the closest prior work---combines
-Knowledge Tracing with RAG but passes mastery state as \emph{prompt context}
-to GPT-4; the retrieval layer returns all documents regardless of mastery.
-Our PCR mechanism operates one layer earlier, at retrieval time.
-
-\paragraph{Corrective RAG} \cite{crag2024} adds self-assessment after
-retrieval (+19\% on PopQA, +36.6\% on PubHealth).
-No published work applies CRAG specifically in educational tutoring---this is
-our second novel contribution.
+\begin{table}[h]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{System} & \textbf{RAG} & \textbf{Mastery gate} & \textbf{Layer} \\
+\midrule
+Khanmigo         & \checkmark & $\times$ & prompt \\
+SocraticLM \cite{socraticlm2024} & $\times$ & $\times$ & fine-tune \\
+KELE \cite{kele2025}      & \checkmark & $\times$ & prompt \\
+TutorLLM \cite{tutorllm2024}  & \checkmark & prompt ctx & prompt \\
+\textbf{UnMask (ours)} & \checkmark & \checkmark & \textbf{retrieval} \\
+\bottomrule
+\end{tabular}
+\caption{Comparison of Socratic AI tutors. Only UnMask gates mastery at the retrieval layer.}
+\label{tab:related}
+\end{table}
 
 %% ─────────────────────────────────────────────────────────────
 \section{System Architecture}
 
 UnMask is organized as four layers orchestrated by a LangGraph state machine.
+Figure~\ref{fig:architecture} shows the end-to-end query path.
+
+%% ── Architecture diagram ──────────────────────────────────────────
+\begin{figure*}[t]
+\centering
+\begin{tikzpicture}[
+  >=Stealth,
+  node distance=0.55cm and 1.05cm,
+  main/.style={draw, rounded corners=4pt, fill=#1,
+               minimum width=1.95cm, minimum height=0.72cm,
+               align=center, font=\small\bfseries, inner sep=4pt},
+  sub/.style={draw=gray!55, rounded corners=3pt, fill=gray!9,
+              minimum width=1.85cm, align=center,
+              font=\scriptsize, inner sep=3pt},
+  arr/.style={->, thick},
+  darr/.style={->, thick, dashed, gray!65},
+]
+%% ─── Top-level pipeline ───────────────────────────────────────────────────────
+\node[main=green!22]              (ui)   {Student\\(Chainlit)};
+\node[main=blue!14, right=1.05cm of ui]   (orch) {Orchestrator};
+\node[main=blue!14, right=1.05cm of orch] (ret)  {Retrieval\\Planner};
+\node[main=blue!14, right=1.05cm of ret]  (gen)  {Socratic\\Generator};
+\node[main=blue!14, right=1.05cm of gen]  (ped)  {Pedagogy\\Agent};
+\node[main=green!22,right=1.05cm of ped]  (out)  {Socratic Q\\(student)};
+
+\draw[arr] (ui)   -- (orch);
+\draw[arr] (orch) -- (ret)  node[above,midway,font=\tiny,align=center]{tutor/\\assess};
+\draw[arr] (ret)  -- (gen);
+\draw[arr] (gen)  -- (ped);
+\draw[arr] (ped)  -- (out);
+
+%% rapport/wrapup bypass
+\draw[darr] (orch) to[bend left=42]
+  node[above,font=\tiny]{rapport / wrapup} (gen);
+
+%% ─── Sub-components ───────────────────────────────────────────────────────────
+%% Orchestrator
+\node[sub, below=0.5cm of orch] (phases)
+  {Phase: R$\to$T$\to$A$\to$W\\time + event gates};
+\draw[darr] (orch) -- (phases);
+
+%% Retrieval Planner
+\node[sub, below=0.5cm of ret]  (pcrf)  {PCR Filter\\(mastery gate)};
+\node[sub, below=0.28cm of pcrf] (hyb)  {Dense + BM25 + RRF\\+ CRAG loop};
+\node[sub, below=0.28cm of hyb, fill=orange!16] (qdr)
+  {Qdrant (48 chunks)\\{\ttfamily is\_answer\_chunk}};
+\draw[darr] (ret)  -- (pcrf);
+\draw[darr] (pcrf) -- (hyb);
+\draw[darr] (hyb)  -- (qdr);
+
+%% Socratic Generator
+\node[sub, below=0.5cm of gen]  (sout)
+  {Structured Output\\hidden: \textit{InternalAnalysis}\\shown: \textit{SocraticQ}};
+\node[sub, below=0.28cm of sout, fill=yellow!18] (llm)
+  {GPT-4o (tutor/assess)\\Ollama (rapport/wrap)};
+\draw[darr] (gen)  -- (sout);
+\draw[darr] (sout) -- (llm);
+
+%% Pedagogy Agent
+\node[sub, below=0.5cm of ped]  (mast)
+  {Mastery BKT\\Concept DAG\\Mistake Log};
+\draw[darr] (ped) -- (mast);
+
+\end{tikzpicture}
+\caption{End-to-end query flow through UnMask. The student message enters the LangGraph state machine; the Orchestrator performs phase transitions and routes tutoring/assessment turns through the Retrieval Planner (PCR-gated hybrid RAG + CRAG), then the Socratic Generator (GPT-4o structured output with hidden \texttt{InternalAnalysis}), then the Pedagogy Agent (mastery update, concept DAG, mistake log). Rapport and wrapup phases bypass retrieval entirely.}
+\label{fig:architecture}
+\end{figure*}
 
 \subsection{Session State Machine (LangGraph)}
 
@@ -144,6 +217,25 @@ mode, chunk scores before/after re-ranking, mastery state per concept, and
 NLI verdict---directly satisfying the requirement that the UI show how chunks
 are being processed.
 
+\paragraph{Personalized onboarding.}
+A single conversational opening prompt (``What are you finding toughest right
+now---diagrams or written Q\&A?'') is parsed by the Orchestrator to extract
+\texttt{study\_focus} (e.g., brachial plexus, rotator cuff) and
+\texttt{learning\_mode} (visual / Q\&A).
+\texttt{study\_focus} reorders the four diagnostic questions so the student's
+declared weak area appears first.
+\texttt{learning\_mode} adjusts the visual-hint threshold:
+visual learners receive a diagram after the first incorrect response;
+Q\&A learners after the second.
+
+\paragraph{Inline anatomical diagrams.}
+When \texttt{consecutive\_incorrect} $\geq$ threshold, the UI appends a
+\texttt{cl.Image} element (Chainlit inline display) showing the relevant
+Gray's Anatomy plate from \texttt{public/anatomy/} (8 public-domain PNG files
+sourced via the Wikimedia Commons API).
+This replaces the Socratic question's ASCII diagram fallback with an actual
+anatomical illustration.
+
 \subsection{Progressive Context Revelation (PCR)}
 \label{sec:pcr}
 
@@ -162,6 +254,40 @@ elif mastery < 0.70: # prerequisite_first
 else:                # full_reveal
     filter = None
 \end{lstlisting}
+
+%% ── PCR mastery gating diagram ───────────────────────────────────
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[>=Stealth, font=\small]
+%% Coloured mastery bands
+\fill[red!22]    (0,0)   rectangle (2.16,0.52);
+\fill[yellow!35] (2.16,0) rectangle (3.78,0.52);
+\fill[green!28]  (3.78,0) rectangle (5.4, 0.52);
+\draw[thick] (0,0) rectangle (5.4,0.52);
+\draw[thick,dashed] (2.16,0) -- (2.16,0.52);
+\draw[thick,dashed] (3.78,0) -- (3.78,0.52);
+%% Band labels
+\node[font=\scriptsize] at (1.08,0.26) {\texttt{context\_only}};
+\node[font=\scriptsize] at (2.97,0.26) {\texttt{prereq\_first}};
+\node[font=\scriptsize] at (4.59,0.26) {\texttt{full\_reveal}};
+%% Threshold ticks
+\foreach \x/\lbl in {0/$0$, 2.16/$0.4$, 3.78/$0.7$, 5.4/$1$}{
+  \draw[thick] (\x,0) -- (\x,-0.1);
+  \node[below,font=\scriptsize] at (\x,-0.1) {\lbl};
+}
+%% What's accessible above each band
+\node[above,align=center,font=\scriptsize] at (1.08,0.52)
+  {context\\{\color{red}\ding{55}} answer};
+\node[above,align=center,font=\scriptsize] at (2.97,0.52)
+  {+prereq\\{\color{red}\ding{55}} answer};
+\node[above,align=center,font=\scriptsize] at (4.59,0.52)
+  {all chunks\\{\color{green!60!black}\ding{51}} answer};
+%% x-axis label
+\node[below=0.4cm,font=\small] at (2.7,-0.1) {Mastery score $m$};
+\end{tikzpicture}
+\caption{PCR filter modes vs.\ mastery score. In \texttt{context\_only} mode ($m<0.40$), Qdrant's server-side \texttt{must\_not} filter physically excludes answer chunks before any Python code executes.}
+\label{fig:pcr}
+\end{figure}
 
 The critical property: in \texttt{context\_only} mode, the \texttt{must\_not}
 filter executes server-side inside Qdrant before any results reach Python.
@@ -276,30 +402,6 @@ Swapping \texttt{qdrant.collection: unmask\_anatomy $\to$ unmask\_physics}
 and re-indexing OpenStax Physics 2e (Chapters 4--6) requires zero code
 changes---clean separation of content (Qdrant collection) from logic
 (LangGraph orchestration).
-
-%% ─────────────────────────────────────────────────────────────
-\section{Task Compliance}
-
-\begin{table}[h]
-\centering
-\small
-\renewcommand{\arraystretch}{1.1}
-\begin{tabularx}{\columnwidth}{@{}lXl@{}}
-\toprule
-\textbf{Task} & \textbf{Implementation} & \textbf{Status} \\
-\midrule
-T1: Retrieval + Masking & PCR filter + structured output schema & \checkmark \\
-T2: Adaptive Strategy  & LangGraph 4-phase + orchestrator & \checkmark \\
-T3: Assessment         & Clinical scenario + gold-chunk eval & \checkmark \\
-T4: Multimodal         & Chainlit accepts uploads; VLM backend pending & $\circ$ \\
-T5: Memory             & Mistake log + proactive revisit at 8 min (§\ref{sec:memory}) & \checkmark \\
-Bonus: Dashboard       & Per-turn mastery panel (\textcolor{red}{$\bullet$}/\textcolor{orange}{$\bullet$}/\textcolor{green}{$\bullet$}); structured end-of-session report & \checkmark \\
-Generalizability       & Config-only swap; zero code changes & \checkmark \\
-\bottomrule
-\end{tabularx}
-\caption{P3 task compliance. $\circ$ = Chainlit image upload implemented; VLM backend planned.}
-\label{tab:compliance}
-\end{table}
 
 %% ─────────────────────────────────────────────────────────────
 \section{Evaluation}
@@ -479,8 +581,10 @@ The 4-question diagnostic probe solves the cold-start problem: without it, PCR
 applies \texttt{context\_only} even to students who already know the material.
 CRAG prevents off-topic Socratic questions caused by irrelevant retrievals; the
 186s ablation stall at q18 confirms it fires in realistic deployment.
-Task~4 (VLM diagram tutoring) is the primary outstanding gap: Chainlit accepts
-image uploads but the VLM backend is not yet integrated.
+Task~4 (VLM diagram tutoring) is partially addressed: anatomical diagrams are
+now served as inline Gray's Anatomy plates (public domain PNG files);
+the remaining gap is VLM \emph{interpretation} of student-uploaded images,
+which requires a MedGemma or GPT-4o Vision backend not yet connected.
 
 %% ─────────────────────────────────────────────────────────────
 \section{Conclusion}

@@ -140,6 +140,18 @@ def _find_prerequisite_gaps(topic: str, mastery: dict, G: nx.DiGraph) -> list[st
 
 # ── Diagnostic probe ──────────────────────────────────────────────────────────
 
+def get_diagnostic_order(study_focus: str) -> list[int]:
+    """Return question indices [0-3] reordered by relevance to study_focus.
+    0=brachial_plexus, 1=rotator_cuff, 2=axillary_nerve, 3=supraspinatus
+    """
+    focus = (study_focus or "").lower()
+    if any(k in focus for k in ["brachial", "plexus", "nerve", "axillary", "radial", "median", "ulnar"]):
+        return [0, 2, 3, 1]   # nerve-focused: lead with plexus, push rotator cuff last
+    if any(k in focus for k in ["rotator", "cuff", "shoulder", "supraspinatus", "infraspinatus", "teres"]):
+        return [1, 3, 2, 0]   # shoulder-focused: lead with rotator cuff
+    return [0, 1, 2, 3]       # default order
+
+
 _DIAGNOSTIC_PROMPTS = [
     "What spinal cord levels make up the brachial plexus?",
     "Name the four rotator cuff muscles.",
@@ -198,10 +210,13 @@ def pedagogy_agent(state: TutoringState) -> dict:
     # ── Rapport: handle diagnostic probe ──────────────────────────────────
     if phase == "rapport":
         # turn 1 = warmup exchange (no anatomy answer), turn 2+ = diagnostic answers
-        # subtract 1 to offset for the warmup turn
-        diagnostic_q_idx = min(turn - 2, len(_DIAGNOSTIC_PROMPTS) - 1)
-        if 0 <= diagnostic_q_idx < len(_DIAGNOSTIC_PROMPTS):
-            mastery = _init_mastery_from_diagnostic(student_msg, diagnostic_q_idx, mastery)
+        # display_idx is 0-based position in the diagnostic sequence (0 = first Q shown)
+        display_idx = turn - 2
+        if 0 <= display_idx < len(_DIAGNOSTIC_PROMPTS):
+            # Map display position back to the actual question ID via study_focus order
+            order = get_diagnostic_order(state.get("study_focus") or "")
+            actual_q_id = order[min(display_idx, len(order) - 1)]
+            mastery = _init_mastery_from_diagnostic(student_msg, actual_q_id, mastery)
 
         complete = (turn - 1) >= _cfg["session"]["diagnostic_questions"]
         return {

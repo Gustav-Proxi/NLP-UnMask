@@ -155,6 +155,7 @@ CONTEXT (textbook source of truth):
 {context}
 
 STUDENT MASTERY: {mastery:.0%} on current topic | RETRIEVAL MODE: {mode} (answer chunks {answer_visibility}present)
+LEARNING MODE: {learning_mode} — if "visual", reference spatial/structural relationships and diagram features in your question
 CONVERSATION: {history}
 TURN: {turn} | CONSECUTIVE INCORRECT: {consecutive_incorrect}
 STUDY FOCUS: {study_focus} | LEARNING MODE: {learning_mode} — if "visual", use spatial anatomical descriptions and reference diagram layouts; if "text", use clear prose explanations.
@@ -361,23 +362,8 @@ def _generate_session_summary(state: TutoringState) -> tuple[str, SessionSummary
             lines.append(f"- {r}")
         lines.append("")
 
-    # Diagram suggestions
-    if summary.diagram_suggestions:
-        lines.append("### 🖼️ Diagrams to Study\n")
-        for d in summary.diagram_suggestions:
-            lines.append(f"- {d}")
-        lines.append("")
-
-    # Flashcards
-    if summary.flashcards:
-        lines.append("### 🃏 Flashcards\n")
-        lines.append("*Study these — cover the answer, quiz yourself on each question:*\n")
-        for i, fc in enumerate(summary.flashcards, 1):
-            concept_label = fc.concept.replace("_", " ").replace(".", " › ")
-            lines.append(f"**Card {i}** `{concept_label}`")
-            lines.append(f"> **Q:** {fc.front}")
-            lines.append(f"> **A:** {fc.back}\n")
-        lines.append("")
+    # Flashcards and diagrams are sent as separate rich messages by app.py
+    # (_send_followup_resources) — omit them here to avoid duplication.
 
     # Next session questions
     if summary.next_session_questions:
@@ -573,7 +559,8 @@ def socratic_generator(state: TutoringState) -> dict:
 
         # Build visual hint separately — shown as a UI card by app.py, NOT in the LLM response
         visual_hint = None
-        if consecutive_incorrect >= 2:
+        visual_threshold = 1 if state.get("learning_mode") == "visual" else 2
+        if consecutive_incorrect >= visual_threshold:
             # Prefer figure chunks that match the current topic
             fig_chunks = [
                 c for c in chunks

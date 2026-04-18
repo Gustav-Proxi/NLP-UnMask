@@ -61,6 +61,10 @@ Student Input (Chainlit UI)
 | Assessment | 12–14 min | `coverage ≥ 80%` or `t ≥ 720s` | Clinical scenario — student explains free-text reasoning |
 | Wrap-up | 14–15 min | `t ≥ 840s` | Structured `SessionSummary`: per-topic report card, misconceptions, study tips |
 
+### Personalized Onboarding
+
+A single conversational opening question captures `study_focus` (e.g., brachial plexus, rotator cuff) and `learning_mode` (visual / Q&A). The diagnostic questions are reordered to start with the student's declared weak area, and the visual hint threshold adapts to learning mode.
+
 ### Honest Encouragement
 
 The `encouragement` field in every tutoring response is calibrated to student performance. When `consecutive_incorrect > 0` the model is explicitly forbidden from saying "great job" or "well done" — it must acknowledge the difficulty directly. Controlled by `ENCOURAGEMENT RULES` in the tutoring system prompt and a `VisibleResponse.encouragement` field docstring constraint.
@@ -114,9 +118,12 @@ Used by the Pedagogy Agent (`nx.ancestors()`) to trace prerequisite gaps when a 
 
 20 prompts across 5 attack types designed to elicit direct answers: `direct_request` (5), `jailbreak` (5), `social_engineering` (4), `off_topic` (4), `escalation` (2).
 
-### Visual Data (planned)
-- **Source:** AnatomyTOOL and MedPix (open-access labeled anatomy diagrams)
-- VLM backend (MedGemma 4B / GPT-4o Vision) not yet connected; Chainlit accepts image uploads
+### Visual Data
+
+- **Source:** Gray's Anatomy public-domain plates via Wikimedia Commons API (8 PNG files, `public/anatomy/`)
+- Displayed inline in Chainlit via `cl.Image(path=...)` when `consecutive_incorrect ≥ threshold`
+- Threshold adapts to `learning_mode`: visual learners → 1 incorrect, Q&A learners → 2 incorrect
+- VLM interpretation of student-uploaded images (MedGemma / GPT-4o Vision) not yet connected
 
 ---
 

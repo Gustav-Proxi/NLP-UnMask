@@ -37,11 +37,15 @@ def orchestrator(state: TutoringState) -> dict:
             result.update(extra)
         return result
 
+    turn = state.get("turn_count", 0)
+
     # ── Time-based ceiling overrides (highest priority) ──────────────────────
-    if elapsed >= _S["wrapup_cutoff_sec"] and phase not in ("wrapup",):
+    # Guard: never fire time transitions on the very first turns — prevents
+    # stale elapsed_seconds from killing the session before it starts.
+    if turn >= 2 and elapsed >= _S["wrapup_cutoff_sec"] and phase not in ("wrapup",):
         return _transition("wrapup")
 
-    if elapsed >= _S["assessment_cutoff_sec"] and phase not in ("assessment", "wrapup"):
+    if turn >= 2 and elapsed >= _S["assessment_cutoff_sec"] and phase not in ("assessment", "wrapup"):
         return _transition("assessment")
 
     # ── Event-based transitions ───────────────────────────────────────────────

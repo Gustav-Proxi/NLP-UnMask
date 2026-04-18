@@ -11,6 +11,7 @@ The backend panel (visible in Chainlit's "debug" sidebar) shows:
 """
 from __future__ import annotations
 
+import os
 import time
 import uuid
 
@@ -18,7 +19,7 @@ import chainlit as cl
 import yaml
 
 from src.graph import graph, make_initial_state
-from src.nodes.pedagogy_agent import generate_diagnostic_question
+from src.nodes.pedagogy_agent import generate_diagnostic_question, get_diagnostic_order
 from src.anatomy_images import get_image_for_topic
 
 with open("config.yaml") as f:
@@ -27,9 +28,12 @@ with open("config.yaml") as f:
 _DIAGNOSTIC_QUESTIONS = cfg["session"]["diagnostic_questions"]
 
 
-def _fmt_diag_q(idx: int, question: str) -> str:
-    """Format a diagnostic question with a numbered header and separator."""
-    return f"---\n\n**🩺 Question {idx + 1} of {_DIAGNOSTIC_QUESTIONS}:**\n\n{question}"
+def _fmt_diag_q(idx: int, question: str, first: bool = False) -> str:
+    prefix = (
+        f"---\n\n**Quick diagnostic — {_DIAGNOSTIC_QUESTIONS} questions to calibrate where we start:**\n\n"
+        if first else "---\n\n"
+    )
+    return f"{prefix}**🩺 Q{idx + 1} of {_DIAGNOSTIC_QUESTIONS}:** {question}"
 
 # Phase display names and icons
 _PHASE_INFO = {
@@ -95,29 +99,14 @@ async def on_chat_start():
     cl.user_session.set("warmup_done", False)    # Track casual warm-up exchange
     cl.user_session.set("diag_q_index", 0)      # Next diagnostic question to inject
 
-    # Warm greeting — asks how they're doing, what to focus on, and learning preference
     welcome = (
-        "# 👋 Hi! Welcome to UnMask\n\n"
-        "I'm your personal NBCOT anatomy study companion. "
-        "I use the **Socratic method** — meaning I guide you *toward* answers rather than just telling you. "
-        "It's more work, but the understanding sticks way better for exams. 💪\n\n"
-        "**Here's the plan for today's 15-minute session:**\n"
-        "1. 🩺 **Quick Diagnostic** ({n} questions) — calibrates where we start\n"
-        "2. 📖 **Targeted Tutoring** — Socratic deep-dives on your weak spots\n"
-        "3. 🧪 **Clinical Assessment** — a real-world NBCOT-style scenario\n"
-        "4. 📋 **Session Report** — honest feedback, flashcards, resources & diagrams\n\n"
-        "---\n\n"
-        "**Before we dive in — three quick things:**\n\n"
-        "1. **How's studying going?** (Helps me know where your head is at)\n"
-        "2. **What would you like to focus on today?**\n"
-        "   - A specific concept or muscle group *(tell me which one)*\n"
-        "   - Cover everything systematically\n"
-        "   - Revise and reinforce what you've already covered\n"
-        "3. **How do you learn best?**\n"
-        "   - Written explanations & Q&A *(text)*\n"
-        "   - Diagrams and visual breakdowns *(visual)*\n\n"
-        "Just reply naturally — I'll pick up on your preferences and we'll get going! 😊"
-    ).format(n=_DIAGNOSTIC_QUESTIONS)
+        "# 👋 Hey! Welcome to UnMask\n\n"
+        "I'm your NBCOT anatomy study companion. "
+        "I use the **Socratic method** — I'll guide you *toward* answers rather than just giving them. "
+        "Takes more effort but the understanding actually sticks. 💪\n\n"
+        "**What are you finding toughest right now — and do you prefer learning with diagrams or written Q&A?**\n\n"
+        "*(Just reply naturally, I'll calibrate from there!)*"
+    )
 
     await cl.Message(content=welcome, author="UnMask").send()
 
@@ -193,21 +182,27 @@ async def on_message(message: cl.Message):
     response = result.get("generated_response", "")
     warmup_done = cl.user_session.get("warmup_done", False)
 
-    # During rapport: first turn = warmup response, then start injecting diagnostic Qs
+    # During rapport: first turn = warmup ack, then inject reordered diagnostic Qs
     if phase == "rapport" and not diagnostic_complete:
         diag_idx = cl.user_session.get("diag_q_index", 0)
         if not warmup_done:
-            q0 = generate_diagnostic_question(0)
-            q0_block = _fmt_diag_q(0, q0)
-            response = (response + f"\n\n{q0_block}") if response else q0_block
+            # Build question order from study_focus on first message
+            # Use state (just set) not result (nodes don't echo study_focus back)
+            order = get_diagnostic_order(state.get("study_focus") or "")
+            cl.user_session.set("diag_order", order)
             cl.user_session.set("warmup_done", True)
             cl.user_session.set("diag_q_index", 1)
+            q0 = generate_diagnostic_question(order[0])
+            q0_block = _fmt_diag_q(0, q0, first=True)
+            response = (response + f"\n\n{q0_block}") if response else q0_block
         else:
-            next_q = generate_diagnostic_question(diag_idx)
-            if next_q:
-                q_block = _fmt_diag_q(diag_idx, next_q)
-                response = (response + f"\n\n{q_block}") if response else q_block
-                cl.user_session.set("diag_q_index", diag_idx + 1)
+            order = cl.user_session.get("diag_order", list(range(_DIAGNOSTIC_QUESTIONS)))
+            if diag_idx < len(order):
+                next_q = generate_diagnostic_question(order[diag_idx])
+                if next_q:
+                    q_block = _fmt_diag_q(diag_idx, next_q)
+                    response = (response + f"\n\n{q_block}") if response else q_block
+                    cl.user_session.set("diag_q_index", diag_idx + 1)
 
     # Determine author label
     author_map = {
@@ -241,13 +236,21 @@ async def on_message(message: cl.Message):
         concept_label = hint_concept.replace("_", " ").replace(".", " › ").title()
 
         if img_data:
+            elements = []
+            image_file = img_data.get("image_file")
+            if image_file:
+                img_path = os.path.abspath(os.path.join("public", "anatomy", image_file))
+                if os.path.exists(img_path):
+                    elements.append(cl.Image(path=img_path, name=concept_label, display="inline"))
+                    image_file = None  # mark as loaded; skip ASCII fallback
             await cl.Message(
                 content=(
                     f"### 🖼️ Visual Reference — {concept_label}\n\n"
                     f"📌 *{img_data['caption']}*\n\n"
-                    f"```\n{img_data['diagram']}\n```\n\n"
-                    f"---\n*Study this, then try the question below.*"
+                    + ("" if not image_file else f"```\n{img_data['diagram']}\n```\n\n")
+                    + "---\n*Study this, then try the question below.*"
                 ),
+                elements=elements,
                 author="🖼️ Visual Aid",
             ).send()
         else:
@@ -374,20 +377,39 @@ async def _send_followup_resources(result: dict) -> None:
     # ── Diagram suggestions message ──────────────────────────────────────────
     if diagrams:
         from src.anatomy_images import get_image_for_topic as _get_img
-        lines = ["## 🖼️ Diagrams to Study\n"]
-        lines.append("*Study each diagram — then try drawing it from memory:*\n")
         for d in diagrams:
-            lines.append(f"**→** {d}\n")
-            for key in ["brachial_plexus", "rotator_cuff", "peripheral_nerves", "shoulder_joint",
-                        "median", "ulnar", "radial", "axillary", "subscapularis", "supraspinatus"]:
-                if key.replace("_", " ") in d.lower() or key in d.lower():
+            # Find the best-matching diagram for this suggestion
+            img = None
+            for key in [
+                "brachial_plexus.terminal_branches", "brachial_plexus.cords",
+                "brachial_plexus.trunks", "brachial_plexus",
+                "rotator_cuff.supraspinatus", "rotator_cuff.infraspinatus",
+                "rotator_cuff.subscapularis", "rotator_cuff",
+                "peripheral_nerves.median", "peripheral_nerves.ulnar",
+                "peripheral_nerves.radial", "peripheral_nerves.axillary",
+                "peripheral_nerves", "shoulder_joint",
+                "spinal_cord.anterior_rami", "spinal_cord.anatomy",
+            ]:
+                if key.replace("_", " ").replace(".", " ") in d.lower() or key.split(".")[-1] in d.lower():
                     img = _get_img(key)
                     if img:
-                        lines.append(f"```\n{img['diagram']}\n```\n")
-                    break
-        lines.append("---\n*Tip: Cover the diagram, redraw from memory, then check.*")
+                        break
 
-        await cl.Message(
-            content="\n".join(lines),
-            author="🖼️ Study Diagrams",
-        ).send()
+            if not img:
+                continue
+
+            elements = []
+            image_file = img.get("image_file")
+            has_image = False
+            if image_file:
+                img_path = os.path.abspath(os.path.join("public", "anatomy", image_file))
+                if os.path.exists(img_path):
+                    elements.append(cl.Image(path=img_path, name=img["caption"][:50], display="inline"))
+                    has_image = True
+            body = (
+                f"### 🖼️ {d}\n\n"
+                f"📌 *{img['caption']}*\n\n"
+                + ("" if has_image else f"```\n{img['diagram']}\n```\n\n")
+                + "---\n*Tip: Cover and redraw from memory, then check.*"
+            )
+            await cl.Message(content=body, elements=elements, author="🖼️ Study Diagram").send()

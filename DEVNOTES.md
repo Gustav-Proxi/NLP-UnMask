@@ -291,9 +291,42 @@ Distribution by concept:
 
 ---
 
+## Personalized Onboarding and Visual Aid System (latest feature)
+
+### Onboarding
+
+Single conversational welcome prompt captures `study_focus` + `learning_mode` from the student's first message (no multi-step form). The Orchestrator parses the reply before graph.invoke and:
+- Sets `study_focus` → passed to `get_diagnostic_order()` in `pedagogy_agent.py` which reorders the 4 diagnostic questions so the declared weak area comes first
+- Sets `learning_mode` (`visual` or `qa`) → adjusts visual hint threshold in `socratic_generator.py`
+
+**Gotcha:** `result.get("study_focus")` is always None after `graph.invoke` because LangGraph nodes don't echo state fields that were already set. Must read from `state.get("study_focus")` before the invoke call.
+
+### Visual Aid System
+
+Gray's Anatomy public-domain plates (sourced via Wikimedia Commons API, downloaded as PNGs to `public/anatomy/`):
+
+| File | Gray's plate | Content |
+|------|-------------|---------|
+| `brachial_plexus.png` | Gray809 | Full brachial plexus diagram |
+| `shoulder_joint.png` | Gray326 | Shoulder joint anatomy |
+| `median_nerve.png` | Gray812 | Median nerve course |
+| `ulnar_nerve.png` | Gray811 | Ulnar nerve course |
+| `radial_nerve.png` | Gray818 | Radial nerve + branches |
+| `axillary_nerve.png` | Gray817 | Axillary nerve |
+| `peripheral_nerves.png` | Gray808 | Peripheral nerve overview |
+| `spinal_cord.png` | Gray672 | Spinal cord cross-section |
+
+Displayed via `cl.Image(path=os.path.abspath(...), display="inline")`. Must use absolute path — `cl.Image(url=...)` from Wikimedia hotlinks is blocked (403/429).
+
+Visual hint threshold: `visual` mode → 1 incorrect; `qa` mode → 2 incorrect.
+
+The mapping `concept → image_file` lives in `src/anatomy_images.py` (10 concept-specific entries + fallback brachial_plexus keys).
+
+---
+
 ## TODO / Outstanding
 
-- [ ] Task 4 (Multimodal VLM): Chainlit accepts image uploads; VLM backend (MedGemma 4B or GPT-4o Vision) not yet connected
+- [ ] Task 4 (Multimodal VLM): Anatomical PNG diagrams now render inline (Gray's Anatomy, `cl.Image`); remaining gap is VLM interpretation of student-uploaded images (MedGemma / GPT-4o Vision backend not yet connected)
 - [ ] Cross-session persistence: `mistake_log` and mastery live in-memory (MemorySaver). For multi-session tracking, swap to SQLite checkpointer.
 - [ ] Pilot study: 10 UB students (5 OT, 5 CS), 15-min sessions, pre/post quiz for learning gain
 - [ ] Mistake memory evaluation: no current eval metric measures whether the revisit actually improves post-revisit performance
